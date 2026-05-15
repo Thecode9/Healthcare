@@ -1,0 +1,37 @@
+{% extends 'core/_base.html' %}
+
+{% block content %}
+<div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <h1>Your History</h1>
+    <a href="{% url 'book_appointment' %}" class="btn btn-primary"
+        style="padding: 10px 15px; width: auto; font-size: 0.9rem;">Book Appt</a>
+</div>
+
+<h3 style="margin: 20px 0 10px; font-size: 1.1rem;">Consultations</h3>
+{% for hist in histories %}
+<div class="pill-card" style="padding: 15px 20px; margin-bottom: 15px; display: block;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <strong style="color: var(--primary);">{{ hist.predicted_disease }}</strong>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">{{ hist.created_at|date:"M d, Y" }}</span>
+    </div>
+    <p style="font-size: 0.85rem; color: var(--text-muted);">Symptoms: {{ hist.symptoms_reported }}</p>
+</div>
+{% empty %}
+<p style="color: var(--text-muted); font-size: 0.9rem;">No consultation history yet.</p>
+{% endfor %}
+
+<h3 style="margin: 30px 0 10px; font-size: 1.1rem;">Appointments</h3>
+{% for appt in appointments %}
+<div class="pill-card"
+    style="padding: 15px 20px; margin-bottom: 15px; display: block; border-left: 4px solid var(--secondary);">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <strong>{{ appt.appointment_date|date:"D, M d, Y - g:i A" }}</strong>
+        <span style="font-size: 0.8rem; background: #E2E8F0; padding: 2px 8px; border-radius: 10px;">{{ appt.status
+            }}</span>
+    </div>
+    <p style="font-size: 0.85rem; color: var(--text-muted);">Reason: {{ appt.reason }}</p>
+</div>
+{% empty %}
+<p style="color: var(--text-muted); font-size: 0.9rem;">No upcoming appointments.</p>
+{% endfor %}
+{% endblock %}

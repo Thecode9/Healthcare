@@ -1,0 +1,45 @@
+{% extends 'core/_base.html' %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 30px; animation: fadeIn 0.4s ease-out;">
+    <span style="font-size: 3rem;">🩺</span>
+    <h1 style="margin-top: 10px;">Analysis Complete</h1>
+    <p style="color: var(--text-muted);">Consultation #{{ history.id }} &bull; {{ history.created_at|date:"M d, Y" }}
+    </p>
+</div>
+
+<div
+    style="background: var(--primary-light); border: 1px solid var(--primary); border-radius: 20px; padding: 24px; margin-bottom: 20px;">
+    <p
+        style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 8px; font-weight: 600;">
+        Predicted Condition</p>
+    <h2 style="font-size: 2rem; color: var(--text-main);">{{ history.predicted_disease }}</h2>
+</div>
+
+{% if history.recommended_medication %}
+<div
+    style="background: #E6FFFA; border: 1px solid var(--secondary); border-radius: 20px; padding: 24px; margin-bottom: 20px;">
+    <p
+        style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--secondary); margin-bottom: 8px; font-weight: 600;">
+        💊 Recommended Medication</p>
+    <p style="font-size: 1.1rem; font-weight: 500;">{{ history.recommended_medication }}</p>
+</div>
+{% endif %}
+
+<div class="pill-card" style="display: block; padding: 20px; margin-bottom: 20px;">
+    <p
+        style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600;">
+        Reported Symptoms</p>
+    <p style="font-weight: 500; line-height: 1.8;">{{ history.symptoms_reported }}</p>
+</div>
+
+<div class="alert alert-error">
+    ⚠️ <strong>Disclaimer:</strong> This is a decision-support tool only. It does <strong>NOT</strong> replace a real
+    doctor. If symptoms persist or worsen, please book an appointment or visit a clinic.
+</div>
+
+<div style="display: flex; gap: 12px; margin-top: 20px;">
+    <a href="{% url 'book_appointment' %}" class="btn btn-secondary" style="flex: 1;">Book Appointment</a>
+    <a href="{% url 'dashboard' %}" class="btn btn-primary" style="flex: 1;">Dashboard</a>
+</div>
+{% endblock %}

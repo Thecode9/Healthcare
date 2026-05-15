@@ -1,0 +1,25 @@
+{% extends 'core/_base.html' %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <h1>Book Appointment</h1>
+    <p style="color: var(--text-muted);">If your symptoms persist, please schedule a visit.</p>
+</div>
+
+<form method="POST" action="{% url 'book_appointment' %}">
+    {% csrf_token %}
+
+    <div class="form-group">
+        <label>Select Date & Time</label>
+        <input type="datetime-local" name="date" class="form-control" required>
+    </div>
+
+    <div class="form-group">
+        <label>Reason for Visit</label>
+        <textarea name="reason" class="form-control" rows="4"
+            placeholder="E.g., My fever hasn't gone down after 3 days of Paracetamol..." required></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Confirm Booking</button>
+</form>
+{% endblock %}

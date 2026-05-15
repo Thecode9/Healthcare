@@ -1,0 +1,43 @@
+{% extends 'core/_base.html' %}
+
+{% block content %}
+<div>
+    <h1 style="font-size: 1.8rem; margin-bottom: 10px;">Create Account</h1>
+    <p style="color: var(--text-muted); margin-bottom: 25px;">Join SmartHealth+ to start monitoring.</p>
+
+    <form method="POST" action="{% url 'register' %}">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+            <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 5px;">{{
+                field.help_text }}</small>
+            {% endif %}
+            {% if field.errors %}
+            <div style="color: var(--danger); font-size: 0.85rem; margin-top: 5px;">{{ field.errors|striptags }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Create Account</button>
+    </form>
+
+    <div class="auth-footer">
+        Already have an account? <a href="{% url 'login' %}">Login here</a>
+    </div>
+</div>
+
+<script>
+    // Quick script to add our custom CSS class to Django's auto-generated form inputs
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('input').forEach(input => {
+            if (input.type !== 'hidden' && input.type !== 'submit' && input.type !== 'checkbox') {
+                input.classList.add('form-control');
+            }
+        });
+    });
+</script>
+{% endblock %}

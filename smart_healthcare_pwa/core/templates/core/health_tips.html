@@ -1,0 +1,18 @@
+{% extends 'core/_base.html' %}
+
+{% block content %}
+<div style="margin-bottom: 25px;">
+    <h1>Health Tips</h1>
+    <p style="color: var(--text-muted);">Simple advice to keep you healthy every day.</p>
+</div>
+
+{% for tip in tips %}
+<div class="pill-card" style="display: block; padding: 20px; margin-bottom: 15px;">
+    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+        <span style="font-size: 1.8rem; margin-right: 12px;">{{ tip.icon }}</span>
+        <h3 style="font-size: 1rem;">{{ tip.title }}</h3>
+    </div>
+    <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">{{ tip.body }}</p>
+</div>
+{% endfor %}
+{% endblock %}

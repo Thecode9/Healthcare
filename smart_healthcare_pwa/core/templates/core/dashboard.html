@@ -1,0 +1,43 @@
+{% extends 'core/_base.html' %}
+
+{% block content %}
+<div class="user-greeting">
+    <h1>Hello, {{ user.username|title }} 👋</h1>
+    <p>How are you feeling today?</p>
+</div>
+
+<a href="{% url 'symptoms' %}" class="pill-card">
+    <div class="pill-icon blue">
+        🩺
+    </div>
+    <div class="pill-content">
+        <h3>Enter Symptoms</h3>
+        <p>Check a new condition or report illness</p>
+    </div>
+</a>
+
+<a href="{% url 'history' %}" class="pill-card">
+    <div class="pill-icon green">
+        📊
+    </div>
+    <div class="pill-content">
+        <h3>View History</h3>
+        <p>Monitor your past symptoms & predictions</p>
+    </div>
+</a>
+
+<a href="{% url 'health_tips' %}" class="pill-card">
+    <div class="pill-icon gray">
+        💡
+    </div>
+    <div class="pill-content">
+        <h3>Health Tips</h3>
+        <p>Read advice based on your history</p>
+    </div>
+</a>
+
+<div class="floating-action">
+    <p style="font-size: 0.8rem; color: var(--text-muted);">In an emergency, please call your local doctor immediately.
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'core/_base.html' %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <h1>Select Symptoms</h1>
+    <p style="color: var(--text-muted);">Please check everything that applies to you today.</p>
+</div>
+
+<form method="POST" action="{% url 'symptoms' %}">
+    {% csrf_token %}
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;">
+        {% for symp in symptoms %}
+        <label
+            style="background: var(--surface); padding: 15px; border-radius: 12px; border: 1px solid #E2E8F0; display: flex; align-items: center; cursor: pointer; transition: 0.2s;">
+            <input type="checkbox" name="symptoms" value="{{ symp }}"
+                style="margin-right: 12px; transform: scale(1.3);">
+            <span style="font-weight: 500;">{{ symp }}</span>
+        </label>
+        {% endfor %}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Analyze Symptoms</button>
+</form>
+{% endblock %}
