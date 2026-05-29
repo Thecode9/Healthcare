@@ -146,3 +146,28 @@ def health_tips(request):
         {'icon': '🩺', 'title': 'Regular Check-ups', 'body': 'Visit a doctor at least once a year even if you feel fine. Early detection of problems leads to better outcomes.'},
     ]
     return render(request, 'core/health_tips.html', {'tips': tips})
+
+@login_required
+def disease_detail(request, disease_name):
+    # Fallback mock data matching prototype if disease isn't fully set up yet
+    disease_info = {
+        'name': disease_name,
+        'probability': request.GET.get('prob', 'N/A'),
+        'top_symptoms': ['Fever', 'Chills', 'Sweating', 'Headache', 'Nausea', 'Vomiting', 'Fatigue'],
+        'precautions': [
+            'Drink plenty of fluids',
+            'Rest and sleep well',
+            'Take medication as advised',
+            'Use mosquito repellent',
+            'Seek medical attention if symptoms worsen'
+        ]
+    }
+    
+    # Try to fetch real symptoms if disease exists in DB
+    try:
+        real_disease = Disease.objects.get(name=disease_name)
+        disease_info['top_symptoms'] = [s.name for s in real_disease.symptoms.all()[:7]]
+    except Disease.DoesNotExist:
+        pass
+
+    return render(request, 'core/disease_detail.html', {'disease': disease_info})

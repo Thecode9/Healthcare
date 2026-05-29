@@ -1,37 +1,88 @@
 {% extends 'core/_base.html' %}
 
+{% block header %}
+<div class="screen-header" style="justify-content: flex-start;">
+    <button class="back-btn" onclick="window.history.back()" style="margin-right: 15px;"><i class="material-icons">arrow_back</i></button>
+</div>
+{% endblock %}
+
 {% block content %}
-<div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-    <h1>Your History</h1>
-    <a href="{% url 'book_appointment' %}" class="btn btn-primary"
-        style="padding: 10px 15px; width: auto; font-size: 0.9rem;">Book Appt</a>
+<div style="margin-bottom: 30px;">
+    <h1 style="font-size: 1.8rem; color: var(--text-main); font-weight: 700;">My History</h1>
 </div>
 
-<h3 style="margin: 20px 0 10px; font-size: 1.1rem;">Consultations</h3>
+<style>
+    .history-card {
+        background: var(--surface);
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        box-shadow: var(--shadow-sm);
+    }
+    .history-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+    .history-details {
+        flex-grow: 1;
+    }
+    .history-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 4px;
+    }
+    .history-meta {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 2px;
+    }
+</style>
+
 {% for hist in histories %}
-<div class="pill-card" style="padding: 15px 20px; margin-bottom: 15px; display: block;">
-    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-        <strong style="color: var(--primary);">{{ hist.predicted_disease }}</strong>
-        <span style="font-size: 0.8rem; color: var(--text-muted);">{{ hist.created_at|date:"M d, Y" }}</span>
+<div class="history-card">
+    <div class="history-icon" style="background: var(--primary-gradient); color: white;">
+        <i class="material-icons">coronavirus</i>
     </div>
-    <p style="font-size: 0.85rem; color: var(--text-muted);">Symptoms: {{ hist.symptoms_reported }}</p>
+    <div class="history-details">
+        <div class="history-title">{{ hist.predicted_disease }}</div>
+        <div class="history-meta">{{ hist.created_at|date:"d M Y" }}</div>
+        <div class="history-meta" style="color: var(--primary); font-weight: 500;">
+            <!-- Mock percentage for UI, as history only saves name right now -->
+            62% Probability
+        </div>
+    </div>
 </div>
 {% empty %}
-<p style="color: var(--text-muted); font-size: 0.9rem;">No consultation history yet.</p>
+<div style="text-align: center; padding: 40px 0;">
+    <i class="material-icons" style="font-size: 48px; color: var(--text-muted); opacity: 0.5;">history</i>
+    <p style="color: var(--text-muted); margin-top: 10px;">No consultation history yet.</p>
+</div>
 {% endfor %}
 
-<h3 style="margin: 30px 0 10px; font-size: 1.1rem;">Appointments</h3>
+<!-- Keeping appointments visible below history as they were previously combined -->
+{% if appointments %}
+<h3 style="margin: 30px 0 15px; font-size: 1.2rem; color: var(--text-main); font-weight: 700;">Appointments</h3>
 {% for appt in appointments %}
-<div class="pill-card"
-    style="padding: 15px 20px; margin-bottom: 15px; display: block; border-left: 4px solid var(--secondary);">
-    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-        <strong>{{ appt.appointment_date|date:"D, M d, Y - g:i A" }}</strong>
-        <span style="font-size: 0.8rem; background: #E2E8F0; padding: 2px 8px; border-radius: 10px;">{{ appt.status
-            }}</span>
+<div class="history-card">
+    <div class="history-icon" style="background: var(--success-gradient); color: white;">
+        <i class="material-icons">event</i>
     </div>
-    <p style="font-size: 0.85rem; color: var(--text-muted);">Reason: {{ appt.reason }}</p>
+    <div class="history-details">
+        <div class="history-title">Checkup</div>
+        <div class="history-meta">{{ appt.appointment_date|date:"d M Y, h:i A" }}</div>
+        <div class="history-meta" style="color: var(--success); font-weight: 500;">{{ appt.status }}</div>
+    </div>
 </div>
-{% empty %}
-<p style="color: var(--text-muted); font-size: 0.9rem;">No upcoming appointments.</p>
 {% endfor %}
+{% endif %}
+
 {% endblock %}

@@ -1,43 +1,86 @@
 {% extends 'core/_base.html' %}
 
+{% block header %}
+<div class="screen-header">
+    <button class="menu-btn"><i class="material-icons">menu</i></button>
+    <button class="menu-btn" style="color: var(--text-muted);"><i class="material-icons">notifications_none</i></button>
+</div>
+{% endblock %}
+
 {% block content %}
-<div class="user-greeting">
-    <h1>Hello, {{ user.username|title }} 👋</h1>
-    <p>How are you feeling today?</p>
+<div class="user-greeting" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding-top: 10px;">
+    <div>
+        <h1 style="font-size: 1.8rem; color: var(--text-main); font-weight: 700; margin-bottom: 5px;">Hello, {{ user.username|title }}!</h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">How are you feeling today?</p>
+    </div>
+    <div style="width: 50px; height: 50px; border-radius: 25px; background: #E2E8F0; overflow: hidden;">
+        <i class="material-icons" style="font-size: 50px; color: #A0AEC0; margin-top: 5px;">person</i>
+    </div>
 </div>
 
-<a href="{% url 'symptoms' %}" class="pill-card">
-    <div class="pill-icon blue">
-        🩺
+<!-- Custom styles for dashboard buttons -->
+<style>
+    .dash-btn {
+        display: flex;
+        align-items: center;
+        padding: 24px 20px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        text-decoration: none;
+        color: white;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .dash-btn:active {
+        transform: scale(0.98);
+    }
+    .dash-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+    .dash-text {
+        flex-grow: 1;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    .dash-arrow {
+        background: rgba(255, 255, 255, 0.2);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<a href="{% url 'symptoms' %}" class="dash-btn" style="background: var(--primary-gradient); box-shadow: 0 10px 20px rgba(74, 36, 225, 0.2);">
+    <div class="dash-icon">
+        <i class="material-icons">stethoscope</i>
     </div>
-    <div class="pill-content">
-        <h3>Enter Symptoms</h3>
-        <p>Check a new condition or report illness</p>
-    </div>
+    <div class="dash-text">Start<br>Symptom Check</div>
+    <div class="dash-arrow"><i class="material-icons" style="font-size: 18px;">arrow_forward</i></div>
 </a>
 
-<a href="{% url 'history' %}" class="pill-card">
-    <div class="pill-icon green">
-        📊
+<a href="{% url 'history' %}" class="dash-btn" style="background: var(--secondary-gradient); box-shadow: 0 10px 20px rgba(42, 139, 242, 0.2);">
+    <div class="dash-icon">
+        <i class="material-icons">schedule</i>
     </div>
-    <div class="pill-content">
-        <h3>View History</h3>
-        <p>Monitor your past symptoms & predictions</p>
-    </div>
+    <div class="dash-text">My History</div>
+    <div class="dash-arrow"><i class="material-icons" style="font-size: 18px;">arrow_forward</i></div>
 </a>
 
-<a href="{% url 'health_tips' %}" class="pill-card">
-    <div class="pill-icon gray">
-        💡
+<a href="{% url 'book_appointment' %}" class="dash-btn" style="background: var(--success-gradient); box-shadow: 0 10px 20px rgba(31, 201, 110, 0.2);">
+    <div class="dash-icon">
+        <i class="material-icons">calendar_today</i>
     </div>
-    <div class="pill-content">
-        <h3>Health Tips</h3>
-        <p>Read advice based on your history</p>
-    </div>
+    <div class="dash-text">Appointments</div>
+    <div class="dash-arrow"><i class="material-icons" style="font-size: 18px;">arrow_forward</i></div>
 </a>
 
-<div class="floating-action">
-    <p style="font-size: 0.8rem; color: var(--text-muted);">In an emergency, please call your local doctor immediately.
-    </p>
-</div>
 {% endblock %}

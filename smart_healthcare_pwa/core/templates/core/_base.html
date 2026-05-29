@@ -8,25 +8,30 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="SmartHealth+">
+    <meta name="apple-mobile-web-app-title" content="MedAI">
     {% load static %}
     <link rel="manifest" href="{% static 'core/manifest.json' %}">
-    <title>SmartHealth+</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>MedAI</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         :root {
-            --primary: #007BFF;
-            --primary-light: #E6F2FF;
-            --secondary: #20B2AA;
+            --primary: #4A24E1; /* Deep Purple */
+            --primary-gradient: linear-gradient(135deg, #4A24E1 0%, #2A8BF2 100%);
+            --primary-light: #E8E5F6;
+            --secondary: #2A8BF2; /* Blue */
+            --secondary-gradient: linear-gradient(135deg, #2A8BF2 0%, #17C6ED 100%);
+            --success: #1FC96E; /* Green */
+            --success-gradient: linear-gradient(135deg, #1FC96E 0%, #0AA856 100%);
             --bg-color: #F8F9FA;
             --surface: #FFFFFF;
-            --text-main: #2D3748;
-            --text-muted: #718096;
-            --danger: #E53E3E;
-            --glass-bg: rgba(255, 255, 255, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.4);
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            --text-main: #1A1A1A;
+            --text-muted: #8E8E93;
+            --danger: #FF3B30;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --shadow-sm: 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-md: 0 8px 24px rgba(74, 36, 225, 0.15);
         }
 
         * {
@@ -56,39 +61,68 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
+            padding-bottom: 70px; /* Space for bottom nav */
         }
 
-        /* Top Navigation / Header */
-        .header {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid var(--glass-border);
+        /* Top Header specific to screens */
+        .screen-header {
+            padding: 20px 24px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            background: transparent;
+        }
+        .screen-header .back-btn, .screen-header .menu-btn {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: var(--text-main);
+            cursor: pointer;
         }
 
-        .header-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--primary);
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 600px;
+            background: var(--surface);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 20px 0;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-decoration: none;
-        }
-
-        .header-link {
-            font-size: 0.9rem;
             color: var(--text-muted);
-            text-decoration: none;
+            font-size: 0.75rem;
             font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-item i {
+            font-size: 24px;
+            margin-bottom: 4px;
+            transition: transform 0.2s, color 0.3s;
+        }
+        .nav-item:hover, .nav-item.active {
+            color: var(--primary);
+        }
+        .nav-item:hover i, .nav-item.active i {
+            transform: translateY(-2px);
+            color: var(--primary);
         }
 
         /* Main Content Area */
         .content {
-            padding: 20px;
+            padding: 0 24px 24px 24px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
@@ -146,13 +180,13 @@
         .btn-primary {
             background: var(--primary);
             color: white;
-            box-shadow: 0 4px 14px rgba(0, 123, 255, 0.3);
+            box-shadow: var(--shadow-md);
         }
 
         .btn-secondary {
             background: white;
-            color: var(--primary);
-            border: 1px solid var(--primary);
+            color: var(--text-main);
+            border: 1px solid #E2E8F0;
         }
 
         /* Alerts / Messages */
@@ -283,12 +317,8 @@
 
 <body>
     <div class="app-container">
-        <header class="header">
-            <a href="{% url 'home' %}" class="header-title">SmartHealth+</a>
-            {% if user.is_authenticated %}
-            <a href="{% url 'logout' %}" class="header-link">Logout</a>
-            {% endif %}
-        </header>
+        {% block header %}
+        {% endblock %}
 
         <main class="content">
             {% if messages %}
@@ -301,6 +331,27 @@
 
             {% block content %}{% endblock %}
         </main>
+
+        {% if user.is_authenticated %}
+        <nav class="bottom-nav">
+            <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="material-icons">home</i>
+                <span>Home</span>
+            </a>
+            <a href="{% url 'history' %}" class="nav-item {% if request.resolver_match.url_name == 'history' %}active{% endif %}">
+                <i class="material-icons">history</i>
+                <span>History</span>
+            </a>
+            <a href="{% url 'book_appointment' %}" class="nav-item {% if request.resolver_match.url_name == 'book_appointment' %}active{% endif %}">
+                <i class="material-icons">calendar_today</i>
+                <span>Appointments</span>
+            </a>
+            <a href="{% url 'logout' %}" class="nav-item">
+                <i class="material-icons">person</i>
+                <span>Profile</span>
+            </a>
+        </nav>
+        {% endif %}
     </div>
 </body>
 

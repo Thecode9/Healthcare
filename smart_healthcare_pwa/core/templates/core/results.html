@@ -1,45 +1,74 @@
 {% extends 'core/_base.html' %}
 
+{% block header %}
+<div class="screen-header" style="justify-content: flex-start;">
+    <button class="back-btn" onclick="window.history.back()" style="margin-right: 15px;"><i class="material-icons">arrow_back</i></button>
+</div>
+{% endblock %}
+
 {% block content %}
-<div style="text-align: center; margin-bottom: 30px; animation: fadeIn 0.4s ease-out;">
-    <span style="font-size: 3rem;">🩺</span>
-    <h1 style="margin-top: 10px;">Analysis Complete</h1>
-    <p style="color: var(--text-muted);">Consultation #{{ history.id }} &bull; {{ history.created_at|date:"M d, Y" }}
-    </p>
+<div style="margin-bottom: 30px;">
+    <h1 style="font-size: 1.8rem; color: var(--text-main); font-weight: 700; margin-bottom: 5px;">Possible Conditions</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Based on your symptoms</p>
 </div>
 
-<div
-    style="background: var(--primary-light); border: 1px solid var(--primary); border-radius: 20px; padding: 24px; margin-bottom: 20px;">
-    <p
-        style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 8px; font-weight: 600;">
-        Predicted Condition</p>
-    <h2 style="font-size: 2rem; color: var(--text-main);">{{ history.predicted_disease }}</h2>
+<!-- Mocking the top 3 results for UI purposes (ML integration pending) -->
+<style>
+    .result-card {
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .result-rank {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-right: 15px;
+        opacity: 0.8;
+    }
+    .result-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        flex-grow: 1;
+    }
+    .result-prob {
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+</style>
+
+<!-- #1 Prediction from history -->
+<div class="result-card" style="background: linear-gradient(135deg, #FF3B30 0%, #FF8F00 100%);">
+    <span class="result-rank">1</span>
+    <span class="result-name">{{ history.predicted_disease }}</span>
+    <span class="result-prob">62%</span>
 </div>
 
-{% if history.recommended_medication %}
-<div
-    style="background: #E6FFFA; border: 1px solid var(--secondary); border-radius: 20px; padding: 24px; margin-bottom: 20px;">
-    <p
-        style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--secondary); margin-bottom: 8px; font-weight: 600;">
-        💊 Recommended Medication</p>
-    <p style="font-size: 1.1rem; font-weight: 500;">{{ history.recommended_medication }}</p>
-</div>
-{% endif %}
-
-<div class="pill-card" style="display: block; padding: 20px; margin-bottom: 20px;">
-    <p
-        style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600;">
-        Reported Symptoms</p>
-    <p style="font-weight: 500; line-height: 1.8;">{{ history.symptoms_reported }}</p>
+<!-- Mock #2 Prediction -->
+<div class="result-card" style="background: var(--secondary-gradient);">
+    <span class="result-rank">2</span>
+    <span class="result-name">Typhoid</span>
+    <span class="result-prob">25%</span>
 </div>
 
-<div class="alert alert-error">
-    ⚠️ <strong>Disclaimer:</strong> This is a decision-support tool only. It does <strong>NOT</strong> replace a real
-    doctor. If symptoms persist or worsen, please book an appointment or visit a clinic.
+<!-- Mock #3 Prediction -->
+<div class="result-card" style="background: var(--success-gradient);">
+    <span class="result-rank">3</span>
+    <span class="result-name">Flu</span>
+    <span class="result-prob">10%</span>
 </div>
 
-<div style="display: flex; gap: 12px; margin-top: 20px;">
-    <a href="{% url 'book_appointment' %}" class="btn btn-secondary" style="flex: 1;">Book Appointment</a>
-    <a href="{% url 'dashboard' %}" class="btn btn-primary" style="flex: 1;">Dashboard</a>
+<div style="text-align: center; margin: 30px 0;">
+    <p style="font-size: 0.85rem; color: var(--text-muted);">These are possible predictions.<br>Not a final diagnosis.</p>
 </div>
+
+<div style="margin-top: auto; padding-bottom: 20px;">
+    <!-- Link to the newly created disease_detail view for the top prediction -->
+    <a href="{% url 'disease_detail' disease_name=history.predicted_disease %}?prob=62%" class="btn btn-primary" style="background: var(--primary-gradient); border: none;">View Details</a>
+</div>
+
 {% endblock %}

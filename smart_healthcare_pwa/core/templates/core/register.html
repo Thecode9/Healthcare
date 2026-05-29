@@ -1,20 +1,26 @@
 {% extends 'core/_base.html' %}
 
+{% block header %}
+<div class="screen-header" style="justify-content: flex-start; padding-bottom: 0;">
+    <button class="back-btn" onclick="window.history.back()"><i class="material-icons">arrow_back</i></button>
+</div>
+{% endblock %}
+
 {% block content %}
-<div>
-    <h1 style="font-size: 1.8rem; margin-bottom: 10px;">Create Account</h1>
-    <p style="color: var(--text-muted); margin-bottom: 25px;">Join SmartHealth+ to start monitoring.</p>
+<div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; padding-top: 20px;">
+    <h1 style="font-size: 2rem; margin-bottom: 8px; color: var(--text-main); font-weight: 700;">Create Account</h1>
+    <p style="color: var(--text-muted); margin-bottom: 30px; font-size: 1rem;">Join MedAI to start your checkups</p>
 
     <form method="POST" action="{% url 'register' %}">
         {% csrf_token %}
 
         {% for field in form %}
-        <div class="form-group">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        <div class="form-group" style="position: relative;">
+            <label for="{{ field.id_for_label }}" style="display: none;">{{ field.label }}</label>
             {{ field }}
+            <!-- Note: JS below will add padding to inputs to make room for icons if needed -->
             {% if field.help_text %}
-            <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 5px;">{{
-                field.help_text }}</small>
+            <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 5px;">{{ field.help_text }}</small>
             {% endif %}
             {% if field.errors %}
             <div style="color: var(--danger); font-size: 0.85rem; margin-top: 5px;">{{ field.errors|striptags }}</div>
@@ -22,20 +28,26 @@
         </div>
         {% endfor %}
 
-        <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Create Account</button>
+        <button type="submit" class="btn btn-primary" style="margin-top: 15px; background: var(--primary-gradient); border: none;">Sign Up</button>
     </form>
 
-    <div class="auth-footer">
+    <div class="auth-footer" style="margin-top: 30px; padding-bottom: 20px;">
         Already have an account? <a href="{% url 'login' %}">Login here</a>
     </div>
 </div>
 
 <script>
-    // Quick script to add our custom CSS class to Django's auto-generated form inputs
+    // Quick script to add our custom CSS class and placeholders to Django's auto-generated form inputs
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll('input').forEach(input => {
             if (input.type !== 'hidden' && input.type !== 'submit' && input.type !== 'checkbox') {
                 input.classList.add('form-control');
+                // Use the label text as placeholder
+                let id = input.id;
+                let label = document.querySelector(`label[for="${id}"]`);
+                if(label) {
+                    input.placeholder = label.innerText;
+                }
             }
         });
     });

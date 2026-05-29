@@ -1,11 +1,11 @@
 {
-    "name": "SmartHealth+ Healthcare System",
-    "short_name": "SmartHealth+",
+    "name": "MedAI Intelligent Disease Prediction System",
+    "short_name": "MedAI",
     "description": "Smart Healthcare Consultation and Monitoring System",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#F8F9FA",
-    "theme_color": "#007BFF",
+    "background_color": "#1A1040",
+    "theme_color": "#4A24E1",
     "orientation": "portrait",
     "icons": [
         {

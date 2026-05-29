@@ -1,25 +1,56 @@
 {% extends 'core/_base.html' %}
 
+{% block header %}
+<div class="screen-header" style="justify-content: flex-start;">
+    <button class="back-btn" onclick="window.history.back()" style="margin-right: 15px;"><i class="material-icons">arrow_back</i></button>
+</div>
+{% endblock %}
+
 {% block content %}
-<div style="margin-bottom: 20px;">
-    <h1>Book Appointment</h1>
-    <p style="color: var(--text-muted);">If your symptoms persist, please schedule a visit.</p>
+<div style="text-align: center; margin-bottom: 30px;">
+    <h1 style="font-size: 1.8rem; color: var(--text-main); font-weight: 700; margin-bottom: 20px;">Book Appointment</h1>
+    <!-- Mock Hospital Image/Icon -->
+    <div style="background: #E8F0FE; width: 120px; height: 120px; border-radius: 60px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+        <i class="material-icons" style="font-size: 60px; color: var(--secondary);">local_hospital</i>
+    </div>
 </div>
 
-<form method="POST" action="{% url 'book_appointment' %}">
+<form method="POST" action="{% url 'book_appointment' %}" style="display: flex; flex-direction: column; flex-grow: 1;">
     {% csrf_token %}
 
-    <div class="form-group">
-        <label>Select Date & Time</label>
-        <input type="datetime-local" name="date" class="form-control" required>
+    <div class="form-group" style="position: relative; margin-bottom: 20px;">
+        <label style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 5px;">Select Hospital</label>
+        <select class="form-control" style="appearance: none; background: white; padding-right: 40px;">
+            <option>City Hospital</option>
+            <option>General Clinic</option>
+            <option>Central Medical</option>
+        </select>
+        <i class="material-icons" style="position: absolute; right: 16px; top: 38px; color: var(--text-muted); pointer-events: none;">expand_more</i>
     </div>
 
-    <div class="form-group">
-        <label>Reason for Visit</label>
-        <textarea name="reason" class="form-control" rows="4"
-            placeholder="E.g., My fever hasn't gone down after 3 days of Paracetamol..." required></textarea>
+    <div class="form-group" style="position: relative; margin-bottom: 20px;">
+        <label style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 5px;">Select Date</label>
+        <input type="date" name="date" class="form-control" required style="background: white; appearance: none; padding-right: 40px;">
+        <!-- The default browser date picker icon will appear, but we can style around it if needed -->
     </div>
 
-    <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Confirm Booking</button>
+    <!-- Hidden reason field since the original backend requires it, but UI doesn't show it prominently -->
+    <input type="hidden" name="reason" value="General checkup booked via App">
+
+    <div class="form-group" style="position: relative; margin-bottom: 30px;">
+        <label style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 5px;">Select Time</label>
+        <select class="form-control" style="appearance: none; background: white; padding-right: 40px;">
+            <option>09:00 AM</option>
+            <option>10:00 AM</option>
+            <option>11:30 AM</option>
+            <option>02:00 PM</option>
+            <option>04:00 PM</option>
+        </select>
+        <i class="material-icons" style="position: absolute; right: 16px; top: 38px; color: var(--text-muted); pointer-events: none;">expand_more</i>
+    </div>
+
+    <div style="margin-top: auto; padding-bottom: 20px;">
+        <button type="submit" class="btn btn-primary" style="background: var(--primary-gradient); border: none;">Book Now</button>
+    </div>
 </form>
 {% endblock %}
