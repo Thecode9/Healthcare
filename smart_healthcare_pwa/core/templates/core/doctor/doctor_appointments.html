@@ -1,0 +1,54 @@
+{% extends 'core/doctor/_base_doctor.html' %}
+
+{% block page_title %}All Appointments{% endblock %}
+
+{% block doc_content %}
+<div class="doc-table-wrap">
+    <div class="doc-table-header">
+        <h2>Appointments ({{ appointments|length }})</h2>
+    </div>
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>Patient</th>
+                <th>Date & Time</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appt in appointments %}
+            <tr>
+                <td><strong>{{ appt.user.username|title }}</strong></td>
+                <td>{{ appt.appointment_date|date:"M d, Y — g:i A" }}</td>
+                <td style="max-width: 280px;">{{ appt.reason }}</td>
+                <td>
+                    <span class="status-badge {{ appt.status|lower }}">{{ appt.get_status_display }}</span>
+                </td>
+                <td style="white-space: nowrap;">
+                    {% if appt.status == 'PENDING' %}
+                        <a href="{% url 'doctor_update_appointment' appt.id 'CONFIRMED' %}" class="doc-btn doc-btn-confirm">Confirm</a>
+                        <a href="{% url 'doctor_update_appointment' appt.id 'CANCELLED' %}" class="doc-btn doc-btn-cancel" style="margin-left: 6px;">Cancel</a>
+                    {% elif appt.status == 'CONFIRMED' %}
+                        <a href="{% url 'doctor_update_appointment' appt.id 'COMPLETED' %}" class="doc-btn doc-btn-complete">Complete</a>
+                        <a href="{% url 'doctor_update_appointment' appt.id 'CANCELLED' %}" class="doc-btn doc-btn-cancel" style="margin-left: 6px;">Cancel</a>
+                    {% else %}
+                        <span style="color: var(--doc-text-muted); font-size: 0.85rem;">—</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">
+                    <div class="doc-empty">
+                        <i class="material-icons">event_busy</i>
+                        <p>No appointments found</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

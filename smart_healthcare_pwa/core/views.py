@@ -19,8 +19,8 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, "Registration successful.")
-            return redirect('dashboard')
+            messages.success(request, "Registration successful. Please complete your profile.")
+            return redirect('onboarding')
         else:
             messages.error(request, "Unsuccessful registration. Invalid information.")
     else:
@@ -40,6 +40,9 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.info(request, f"You are now logged in as {username}.")
+                # Redirect doctors to doctor portal
+                if user.is_staff:
+                    return redirect('doctor_dashboard')
                 return redirect('dashboard')
             else:
                 messages.error(request, "Invalid username or password.")
@@ -171,3 +174,44 @@ def disease_detail(request, disease_name):
         pass
 
     return render(request, 'core/disease_detail.html', {'disease': disease_info})
+
+@login_required
+def onboarding_view(request):
+    # Check if user already has a profile
+    from .models import UserProfile
+    if hasattr(request.user, 'userprofile'):
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name')
+        age = request.POST.get('age')
+        gender = request.POST.get('gender')
+        blood_type = request.POST.get('blood_type')
+        actively_on_medication = request.POST.get('actively_on_medication') == 'on'
+        current_medications = request.POST.get('current_medications')
+        allergies = request.POST.get('allergies')
+
+        UserProfile.objects.create(
+            user=request.user,
+            full_name=full_name,
+            age=age,
+            gender=gender,
+            blood_type=blood_type,
+            actively_on_medication=actively_on_medication,
+            current_medications=current_medications,
+            allergies=allergies
+        )
+        messages.success(request, "Profile created successfully!")
+        return redirect('dashboard')
+        
+    return render(request, 'core/onboarding.html')
+
+@login_required
+def profile_view(request):
+    try:
+        profile = request.user.userprofile
+    except:
+        # If they somehow skipped onboarding
+        return redirect('onboarding')
+        
+    return render(request, 'core/profile.html', {'profile': profile})

@@ -1,0 +1,42 @@
+{% extends 'core/doctor/_base_doctor.html' %}
+
+{% block page_title %}All Consultations{% endblock %}
+
+{% block doc_content %}
+<div class="doc-table-wrap">
+    <div class="doc-table-header">
+        <h2>AI Consultation History ({{ consultations|length }})</h2>
+    </div>
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>Patient</th>
+                <th>Predicted Disease</th>
+                <th>Medication</th>
+                <th>Symptoms</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in consultations %}
+            <tr>
+                <td><strong>{{ c.user.username|title }}</strong></td>
+                <td style="color: var(--doc-primary); font-weight: 600;">{{ c.predicted_disease }}</td>
+                <td>{{ c.recommended_medication|default:"—" }}</td>
+                <td style="max-width: 220px; color: var(--doc-text-muted); font-size: 0.85rem;">{{ c.symptoms_reported }}</td>
+                <td>{{ c.created_at|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">
+                    <div class="doc-empty">
+                        <i class="material-icons">search_off</i>
+                        <p>No consultations yet</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

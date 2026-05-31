@@ -1,0 +1,58 @@
+{% extends 'core/doctor/_base_doctor.html' %}
+
+{% block page_title %}All Patients{% endblock %}
+
+{% block doc_content %}
+<div class="doc-table-wrap">
+    <div class="doc-table-header">
+        <h2>Registered Patients ({{ patients|length }})</h2>
+    </div>
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Blood Type</th>
+                <th>Consultations</th>
+                <th>Joined</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in patients %}
+            <tr>
+                <td><strong>{{ p.username|title }}</strong></td>
+                <td>
+                    {% if p.userprofile %}
+                        {{ p.userprofile.full_name }}
+                    {% else %}
+                        <span style="color: var(--doc-text-muted);">No profile</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if p.userprofile %}{{ p.userprofile.age }}{% else %}—{% endif %}
+                </td>
+                <td>
+                    {% if p.userprofile %}{{ p.userprofile.get_gender_display }}{% else %}—{% endif %}
+                </td>
+                <td>
+                    {% if p.userprofile and p.userprofile.blood_type %}{{ p.userprofile.blood_type }}{% else %}—{% endif %}
+                </td>
+                <td>{{ p.consultations.count }}</td>
+                <td>{{ p.date_joined|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">
+                    <div class="doc-empty">
+                        <i class="material-icons">people_outline</i>
+                        <p>No patients registered yet</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

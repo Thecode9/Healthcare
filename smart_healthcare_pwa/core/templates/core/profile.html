@@ -1,0 +1,49 @@
+{% extends 'core/_base.html' %}
+
+{% block header %}
+<div class="screen-header">
+    <button class="back-btn" onclick="window.history.back()"><i class="material-icons">arrow_back</i></button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; margin-top: -10px;">
+    <div style="width: 100px; height: 100px; border-radius: 50px; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; margin-bottom: 15px; box-shadow: var(--shadow-md);">
+        <span style="font-size: 40px; color: white; font-weight: 700;">{{ profile.full_name|slice:":1"|upper }}</span>
+    </div>
+    <h1 style="font-size: 1.5rem; color: var(--text-main); font-weight: 700; margin-bottom: 5px;">{{ profile.full_name }}</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">@{{ user.username }}</p>
+</div>
+
+<div style="background: var(--surface); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-sm); margin-bottom: 25px;">
+    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #F1F5F9; padding-bottom: 12px; margin-bottom: 12px;">
+        <span style="color: var(--text-muted);"><i class="material-icons" style="font-size: 16px; vertical-align: text-bottom; margin-right: 5px;">cake</i> Age</span>
+        <span style="font-weight: 600;">{{ profile.age }} yrs</span>
+    </div>
+    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #F1F5F9; padding-bottom: 12px; margin-bottom: 12px;">
+        <span style="color: var(--text-muted);"><i class="material-icons" style="font-size: 16px; vertical-align: text-bottom; margin-right: 5px;">wc</i> Sex</span>
+        <span style="font-weight: 600;">{{ profile.get_gender_display }}</span>
+    </div>
+    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #F1F5F9; padding-bottom: 12px; margin-bottom: 12px;">
+        <span style="color: var(--text-muted);"><i class="material-icons" style="font-size: 16px; vertical-align: text-bottom; margin-right: 5px;">water_drop</i> Blood Type</span>
+        <span style="font-weight: 600;">{{ profile.blood_type|default:"Unknown" }}</span>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+        <span style="color: var(--text-muted);"><i class="material-icons" style="font-size: 16px; vertical-align: text-bottom; margin-right: 5px;">medication</i> On Meds</span>
+        <span style="font-weight: 600; color: {% if profile.actively_on_medication %}var(--danger){% else %}var(--success){% endif %};">
+            {{ profile.actively_on_medication|yesno:"Yes,No" }}
+        </span>
+    </div>
+</div>
+
+<!-- Re-adding the Health Tips Button here -->
+<a href="{% url 'health_tips' %}" class="btn" style="background: var(--secondary-gradient); color: white; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(42, 139, 242, 0.2);">
+    <i class="material-icons">tips_and_updates</i> Health & Wellness Tips
+</a>
+
+<!-- Logout Button -->
+<a href="{% url 'logout' %}" class="btn" style="background: #FFF5F5; color: var(--danger); border: 1px solid #FED7D7; display: flex; align-items: center; justify-content: center; gap: 10px;">
+    <i class="material-icons">logout</i> Log Out
+</a>
+
+{% endblock %}

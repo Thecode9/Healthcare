@@ -1,0 +1,113 @@
+{% extends 'core/doctor/_base_doctor.html' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block doc_content %}
+<!-- Stats -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">Pending Appointments</div>
+        <div class="stat-value" style="color: #E65100;">{{ pending_count }}</div>
+        <span class="stat-badge pending">Needs attention</span>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total Patients</div>
+        <div class="stat-value" style="color: var(--doc-primary);">{{ patient_count }}</div>
+        <span class="stat-badge info">Registered</span>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Consultations Today</div>
+        <div class="stat-value" style="color: var(--doc-success);">{{ today_consultations }}</div>
+        <span class="stat-badge success">Completed</span>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Confirmed Appointments</div>
+        <div class="stat-value" style="color: #1565C0;">{{ confirmed_count }}</div>
+        <span class="stat-badge info">Upcoming</span>
+    </div>
+</div>
+
+<!-- Recent Appointments -->
+<div class="doc-table-wrap">
+    <div class="doc-table-header">
+        <h2>Recent Appointments</h2>
+        <a href="{% url 'doctor_appointments' %}" class="doc-btn doc-btn-confirm">View All</a>
+    </div>
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>Patient</th>
+                <th>Date & Time</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appt in recent_appointments %}
+            <tr>
+                <td><strong>{{ appt.user.username|title }}</strong></td>
+                <td>{{ appt.appointment_date|date:"M d, Y — g:i A" }}</td>
+                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ appt.reason }}</td>
+                <td>
+                    <span class="status-badge {{ appt.status|lower }}">{{ appt.get_status_display }}</span>
+                </td>
+                <td>
+                    {% if appt.status == 'PENDING' %}
+                        <a href="{% url 'doctor_update_appointment' appt.id 'CONFIRMED' %}" class="doc-btn doc-btn-confirm">Confirm</a>
+                    {% elif appt.status == 'CONFIRMED' %}
+                        <a href="{% url 'doctor_update_appointment' appt.id 'COMPLETED' %}" class="doc-btn doc-btn-complete">Complete</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">
+                    <div class="doc-empty">
+                        <i class="material-icons">event_busy</i>
+                        <p>No appointments yet</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Recent Consultations -->
+<div class="doc-table-wrap">
+    <div class="doc-table-header">
+        <h2>Recent AI Consultations</h2>
+        <a href="{% url 'doctor_consultations' %}" class="doc-btn doc-btn-confirm">View All</a>
+    </div>
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>Patient</th>
+                <th>Predicted Disease</th>
+                <th>Symptoms</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in recent_consultations %}
+            <tr>
+                <td><strong>{{ c.user.username|title }}</strong></td>
+                <td style="color: var(--doc-primary); font-weight: 600;">{{ c.predicted_disease }}</td>
+                <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--doc-text-muted);">{{ c.symptoms_reported }}</td>
+                <td>{{ c.created_at|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">
+                    <div class="doc-empty">
+                        <i class="material-icons">search_off</i>
+                        <p>No consultations yet</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

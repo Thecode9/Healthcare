@@ -48,3 +48,21 @@ class Appointment(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.appointment_date.strftime('%Y-%m-%d %H:%M')} [{self.status}]"
+
+class UserProfile(models.Model):
+    GENDER_CHOICES = [
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('O', 'Other')
+    ]
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=100)
+    age = models.IntegerField()
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+    blood_type = models.CharField(max_length=5, blank=True, null=True)
+    actively_on_medication = models.BooleanField(default=False)
+    current_medications = models.TextField(blank=True, null=True)
+    allergies = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.full_name}'s Profile"
