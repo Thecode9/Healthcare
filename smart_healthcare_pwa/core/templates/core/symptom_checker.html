@@ -33,8 +33,22 @@
         font-size: 1rem;
         color: var(--text-main);
         font-weight: 500;
+        text-transform: capitalize;
     }
     
+    .sticky-footer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--bg, #fff);
+        padding: 12px 16px;
+        display: flex;
+        justify-content: center;
+        box-shadow: 0 -6px 22px rgba(0,0,0,0.06);
+        z-index: 9999;
+    }
+
     /* Custom Checkbox */
     .custom-checkbox input {
         display: none;
@@ -65,41 +79,63 @@
     }
 </style>
 
-<form method="POST" action="{% url 'symptoms' %}" style="display: flex; flex-direction: column; flex-grow: 1;">
+<form method="POST" action="{% url 'symptoms' %}" style="display: flex; flex-direction: column; flex-grow: 1; min-height: 0;">
     {% csrf_token %}
 
-    <div id="symptomsList" style="flex-grow: 1; overflow-y: auto; margin-bottom: 30px;">
+    <div id="symptomsList" style="flex-grow: 1; overflow-y: auto; margin-bottom: 16px; padding-bottom: 120px; max-height: calc(100vh - 220px);">
         {% for symp in symptoms %}
         <label class="symptom-item">
-            <span class="symptom-name">{{ symp }}</span>
+            <span class="symptom-name">{{ symp.label }}</span>
             <div class="custom-checkbox">
-                <input type="checkbox" name="symptoms" value="{{ symp }}">
+                <input type="checkbox" name="symptoms" value="{{ symp.key }}">
                 <div class="checkmark"></div>
             </div>
         </label>
         {% endfor %}
     </div>
 
-    <button type="submit" class="btn btn-primary" style="background: var(--primary-gradient); border: none; display: flex; align-items: center; justify-content: center; gap: 10px;">
-        Predict <i class="material-icons" style="font-size: 20px;">arrow_forward</i>
-    </button>
+    <div class="sticky-footer">
+        <button type="submit" class="btn btn-primary" style="background: var(--primary-gradient); border: none; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 420px; padding: 16px;">
+            Predict <i class="material-icons" style="font-size: 20px;">arrow_forward</i>
+        </button>
+    </div>
 </form>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('symptomSearch');
-        const symptomItems = document.querySelectorAll('.symptom-item');
+        const container = document.getElementById('symptomsList');
 
+        // Live search — query items dynamically so reordering works
         searchInput.addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase();
-            symptomItems.forEach(item => {
+            const items = container.querySelectorAll('.symptom-item');
+            items.forEach(item => {
                 const name = item.querySelector('.symptom-name').textContent.toLowerCase();
-                if (name.includes(term)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
+                item.style.display = name.includes(term) ? 'flex' : 'none';
             });
+        });
+
+        // When a checkbox is toggled, move the checked item(s) to the top
+        container.addEventListener('change', function(e) {
+            const input = e.target;
+            if (!input.matches('input[type="checkbox"]')) return;
+            const label = input.closest('.symptom-item');
+            if (!label) return;
+
+            if (input.checked) {
+                // prepend so newest checked appears first
+                container.prepend(label);
+            } else {
+                // move unchecked items below checked ones — find last checked
+                const checkedInputs = container.querySelectorAll('input[type="checkbox"]:checked');
+                if (checkedInputs.length === 0) {
+                    container.append(label);
+                } else {
+                    const lastChecked = checkedInputs[checkedInputs.length - 1].closest('.symptom-item');
+                    lastChecked.after(label);
+                }
+            }
         });
     });
 </script>
