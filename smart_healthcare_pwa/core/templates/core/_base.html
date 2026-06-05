@@ -342,6 +342,10 @@
                 <i class="material-icons">history</i>
                 <span>History</span>
             </a>
+            <a href="{% url 'health_tips' %}" class="nav-item {% if request.resolver_match.url_name == 'health_tips' %}active{% endif %}">
+                <i class="material-icons">lightbulb</i>
+                <span>Tips</span>
+            </a>
             <a href="{% url 'book_appointment' %}" class="nav-item {% if request.resolver_match.url_name == 'book_appointment' %}active{% endif %}">
                 <i class="material-icons">calendar_today</i>
                 <span>Appointments</span>
@@ -353,6 +357,15 @@
         </nav>
         {% endif %}
     </div>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register("{% static 'core/sw.js' %}")
+                    .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
+        }
+    </script>
 </body>
 
 </html>

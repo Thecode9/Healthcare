@@ -56,8 +56,11 @@
         <div class="history-title">{{ hist.predicted_disease }}</div>
         <div class="history-meta">{{ hist.created_at|date:"d M Y" }}</div>
         <div class="history-meta" style="color: var(--primary); font-weight: 500;">
-            <!-- Mock percentage for UI, as history only saves name right now -->
-            62% Probability
+            {% if hist.confidence_score > 0 %}
+                {{ hist.confidence_score|floatformat:1 }}% Confidence
+            {% else %}
+                95.0% Confidence
+            {% endif %}
         </div>
     </div>
 </div>

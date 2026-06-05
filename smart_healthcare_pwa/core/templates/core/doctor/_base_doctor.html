@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1A1A2E">
     {% load static %}
+    <link rel="manifest" href="{% static 'core/manifest.json' %}">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>MedAI — Doctor Portal</title>
     <style>
@@ -233,7 +234,7 @@
         .stat-badge.info { background: var(--doc-primary-light); color: var(--doc-primary); }
 
         /* Table */
-        .doc-table-wrap {
+        .doc-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
             background: var(--doc-surface);
             border-radius: 16px;
             box-shadow: var(--shadow-sm);
@@ -453,5 +454,14 @@
             </div>
         </main>
     </div>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register("{% static 'core/sw.js' %}")
+                    .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>

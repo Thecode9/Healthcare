@@ -1,0 +1,329 @@
+{% extends 'core/doctor/_base_doctor.html' %}
+
+{% block page_title %}Patient: {{ patient.username|title }}{% endblock %}
+
+{% block doc_content %}
+<style>
+    /* --- Back button --- */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--doc-text-muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 24px;
+        transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--doc-primary); }
+
+    /* --- Profile Header Card --- */
+    .patient-header {
+        background: var(--doc-surface);
+        border-radius: 20px;
+        padding: 32px;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        border: 1px solid var(--doc-border);
+        box-shadow: var(--shadow-sm);
+    }
+    .patient-big-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--doc-primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .patient-header-info h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+    .patient-header-info p {
+        color: var(--doc-text-muted);
+        font-size: 0.9rem;
+    }
+    .patient-meta-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+    }
+    .meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        background: var(--doc-primary-light);
+        color: var(--doc-primary);
+        font-size: 0.82rem;
+        font-weight: 600;
+    }
+    .meta-pill i { font-size: 15px; }
+    .meta-pill.blood { background: #FFE8E8; color: #c62828; }
+    .meta-pill.gender { background: #E8F5E9; color: #2E7D32; }
+    .meta-pill.age { background: #E3F2FD; color: #1565C0; }
+
+    /* --- Stats row --- */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+    .mini-stat {
+        background: var(--doc-surface);
+        border: 1px solid var(--doc-border);
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+        text-align: center;
+    }
+    .mini-stat .label { font-size: 0.8rem; color: var(--doc-text-muted); font-weight: 500; margin-bottom: 6px; }
+    .mini-stat .value { font-size: 1.8rem; font-weight: 700; }
+
+    /* --- Section Headings --- */
+    .section-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--doc-text);
+    }
+    .section-title i { color: var(--doc-primary); font-size: 20px; }
+
+    /* --- Consultation Timeline --- */
+    .timeline { display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px; }
+    .timeline-item {
+        background: var(--doc-surface);
+        border: 1px solid var(--doc-border);
+        border-radius: 16px;
+        padding: 20px 24px;
+        box-shadow: var(--shadow-sm);
+        transition: box-shadow 0.2s;
+    }
+    .timeline-item:hover { box-shadow: var(--shadow-md); }
+    .timeline-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .timeline-disease {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--doc-primary);
+    }
+    .confidence-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+    .confidence-badge.high { background: #E8F5E9; color: #2E7D32; }
+    .confidence-badge.mid { background: #FFF3E0; color: #E65100; }
+    .confidence-badge.low { background: #FFEBEE; color: #C62828; }
+
+    .timeline-symptoms {
+        font-size: 0.85rem;
+        color: var(--doc-text-muted);
+        margin-bottom: 10px;
+        line-height: 1.6;
+    }
+    .alt-predictions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+    .alt-badge {
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        background: var(--doc-primary-light);
+        color: var(--doc-primary);
+    }
+    .timeline-date {
+        font-size: 0.8rem;
+        color: var(--doc-text-muted);
+        margin-top: 8px;
+    }
+
+    /* --- Appointments Table --- */
+    .appt-empty {
+        text-align: center;
+        padding: 32px;
+        color: var(--doc-text-muted);
+        font-size: 0.9rem;
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 600px) {
+        .patient-header { flex-direction: column; text-align: center; }
+        .patient-meta-pills { justify-content: center; }
+    }
+</style>
+
+<!-- Back Navigation -->
+<a href="{% url 'doctor_patients' %}" class="back-link">
+    <i class="material-icons">arrow_back</i> Back to All Patients
+</a>
+
+<!-- Patient Header Card -->
+<div class="patient-header">
+    <div class="patient-big-avatar">{{ patient.username|first|upper }}</div>
+    <div class="patient-header-info">
+        <h2>{{ profile.full_name|default:patient.username|title }}</h2>
+        <p>@{{ patient.username }} · Registered {{ patient.date_joined|date:"M d, Y" }}</p>
+        <div class="patient-meta-pills">
+            {% if profile %}
+                <span class="meta-pill age"><i class="material-icons">cake</i> {{ profile.age }} yrs</span>
+                <span class="meta-pill gender"><i class="material-icons">person</i> {{ profile.get_gender_display }}</span>
+                {% if profile.blood_type %}
+                    <span class="meta-pill blood"><i class="material-icons">water_drop</i> {{ profile.blood_type }}</span>
+                {% endif %}
+                {% if profile.allergies %}
+                    <span class="meta-pill" style="background:#FFF3E0;color:#E65100;">
+                        <i class="material-icons">warning</i> Allergies: {{ profile.allergies }}
+                    </span>
+                {% endif %}
+                {% if profile.actively_on_medication %}
+                    <span class="meta-pill" style="background:#F3E5F5;color:#6A1B9A;">
+                        <i class="material-icons">medication</i> On Medication
+                    </span>
+                {% endif %}
+            {% else %}
+                <span class="meta-pill">No profile data available</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="stats-row">
+    <div class="mini-stat">
+        <div class="label">Total Consultations</div>
+        <div class="value" style="color: var(--doc-primary);">{{ total_consultations }}</div>
+    </div>
+    <div class="mini-stat">
+        <div class="label">Total Appointments</div>
+        <div class="value" style="color: var(--doc-accent);">{{ total_appointments }}</div>
+    </div>
+    {% if profile and profile.actively_on_medication %}
+    <div class="mini-stat">
+        <div class="label">Current Medications</div>
+        <div style="font-size: 0.85rem; color: var(--doc-text-muted); margin-top: 4px; font-weight: 500;">{{ profile.current_medications|default:"Not specified" }}</div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Consultation History -->
+<div class="section-title">
+    <i class="material-icons">history</i> Consultation History
+</div>
+
+{% if enriched %}
+<div class="timeline">
+    {% for item in enriched %}
+    <div class="timeline-item">
+        <div class="timeline-header">
+            <span class="timeline-disease">{{ item.consultation.predicted_disease }}</span>
+            <span class="confidence-badge {% if item.consultation.confidence_score >= 70 %}high{% elif item.consultation.confidence_score >= 40 %}mid{% else %}low{% endif %}">
+                {{ item.consultation.confidence_score|floatformat:1 }}% confidence
+            </span>
+        </div>
+        <div class="timeline-symptoms">
+            <strong style="color: var(--doc-text);">Symptoms reported:</strong><br>
+            {{ item.consultation.symptoms_reported }}
+        </div>
+        {% if item.consultation.recommended_medication %}
+        <div style="font-size: 0.85rem; margin-bottom: 8px;">
+            <strong>Recommended:</strong>
+            <span style="color: var(--doc-text-muted);">{{ item.consultation.recommended_medication }}</span>
+        </div>
+        {% endif %}
+        <!-- Alt predictions -->
+        {% if item.predictions|length > 1 %}
+        <div class="alt-predictions">
+            <span style="font-size: 0.78rem; color: var(--doc-text-muted); align-self: center;">Other possibilities:</span>
+            {% for pred in item.predictions|slice:"1:" %}
+                <span class="alt-badge">{{ pred.disease }} ({{ pred.probability|floatformat:1 }}%)</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="timeline-date">
+            <i class="material-icons" style="font-size: 14px; vertical-align: middle;">schedule</i>
+            {{ item.consultation.created_at|date:"F d, Y · H:i" }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="appt-empty">
+    <i class="material-icons" style="font-size: 40px; opacity: 0.3; display: block; margin-bottom: 8px;">search_off</i>
+    No consultation history found for this patient.
+</div>
+{% endif %}
+
+<!-- Appointments -->
+<div class="section-title" style="margin-top: 8px;">
+    <i class="material-icons">calendar_today</i> Appointments
+</div>
+
+{% if appointments %}
+<div class="doc-table-wrap" style="margin-bottom: 0;">
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>Date & Time</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appt in appointments %}
+            <tr>
+                <td>{{ appt.appointment_date|date:"M d, Y · H:i" }}</td>
+                <td>{{ appt.reason }}</td>
+                <td>
+                    <span class="status-badge {{ appt.status|lower }}">{{ appt.get_status_display }}</span>
+                </td>
+                <td style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    {% if appt.status == 'PENDING' %}
+                        <a href="{% url 'doctor_update_appointment' appt.id 'CONFIRMED' %}" class="doc-btn doc-btn-confirm">Confirm</a>
+                        <a href="{% url 'doctor_update_appointment' appt.id 'CANCELLED' %}" class="doc-btn doc-btn-cancel">Cancel</a>
+                    {% elif appt.status == 'CONFIRMED' %}
+                        <a href="{% url 'doctor_update_appointment' appt.id 'COMPLETED' %}" class="doc-btn doc-btn-complete">Complete</a>
+                    {% else %}
+                        <span style="color: var(--doc-text-muted); font-size: 0.85rem;">No actions</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="appt-empty">
+    <i class="material-icons" style="font-size: 40px; opacity: 0.3; display: block; margin-bottom: 8px;">event_busy</i>
+    No appointments booked by this patient.
+</div>
+{% endif %}
+
+{% endblock %}

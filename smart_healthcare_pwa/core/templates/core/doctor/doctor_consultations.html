@@ -21,7 +21,7 @@
             {% for c in consultations %}
             <tr>
                 <td><strong>{{ c.user.username|title }}</strong></td>
-                <td style="color: var(--doc-primary); font-weight: 600;">{{ c.predicted_disease }}</td>
+                <td style="color: var(--doc-primary); font-weight: 600;">{{ c.predicted_disease }} {% if c.confidence_score > 0 %}<span style="font-size: 0.8rem; color: var(--doc-text-muted);">({{ c.confidence_score|floatformat:1 }}%)</span>{% endif %}</td>
                 <td>{{ c.recommended_medication|default:"—" }}</td>
                 <td style="max-width: 220px; color: var(--doc-text-muted); font-size: 0.85rem;">{{ c.symptoms_reported }}</td>
                 <td>{{ c.created_at|date:"M d, Y" }}</td>

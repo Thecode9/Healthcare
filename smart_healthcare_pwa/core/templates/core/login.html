@@ -47,6 +47,9 @@
 
     <div class="auth-footer" style="margin-top: auto; padding-bottom: 20px;">
         Don't have an account? <a href="{% url 'register' %}" style="color: var(--primary);">Sign up</a>
+        <div style="margin-top: 15px; font-size: 0.8rem;">
+            Clinical Staff? <a href="{% url 'doctor_login' %}" style="color: var(--secondary); font-weight: 600;">Staff Portal</a>
+        </div>
     </div>
 </div>
 {% endblock %}

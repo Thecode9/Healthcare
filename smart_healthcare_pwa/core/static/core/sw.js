@@ -15,9 +15,23 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+    // Only cache GET requests
+    if (event.request.method !== 'GET') {
+        return;
+    }
     event.respondWith(
-        caches.match(event.request).then(response => {
-            return response || fetch(event.request);
-        })
+        fetch(event.request)
+            .then(response => {
+                if (response && response.status === 200) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, responseClone);
+                    });
+                }
+                return response;
+            })
+            .catch(() => {
+                return caches.match(event.request);
+            })
     );
 });
