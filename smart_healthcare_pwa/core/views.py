@@ -1,9 +1,114 @@
+from pathlib import Path
+import pickle
+
+import pandas as pd
+import joblib
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Symptom, Disease, Medication, ConsultationHistory, Appointment
+
+WORKSPACE_ROOT = Path(__file__).resolve().parents[3]
+# prefer model files inside Healthcare/model_files so the app is self-contained
+LOCAL_MODEL_DIR = WORKSPACE_ROOT / "model_files"
+# fallback to repo-level model_files (one directory up) for existing files
+REPO_MODEL_DIR = Path(__file__).resolve().parents[4] / "model_files"
+
+def _choose_model_path(filename):
+    local = LOCAL_MODEL_DIR / filename
+    repo = REPO_MODEL_DIR / filename
+    if local.exists():
+        return local
+    return repo
+
+MODEL_FILE = _choose_model_path("random_forest_model.pkl")
+MODEL_COLUMNS_FILE = _choose_model_path("model_columns.pkl")
+SYMPTOM_CSV_FILE = _choose_model_path("DiseaseAndSymptoms.csv")
+PRECAUTION_CSV_FILE = _choose_model_path("Disease precaution.csv")
+ALL_SYMPTOMS_FILE = _choose_model_path("all_symptoms.pkl")
+
+_prediction_model = None
+_prediction_columns = None
+_symptom_choices = None
+_precaution_map = None
+
+
+def load_prediction_model():
+    global _prediction_model, _prediction_columns
+    if _prediction_model is not None and _prediction_columns is not None:
+        return _prediction_model, _prediction_columns
+
+    try:
+        _prediction_model = joblib.load(MODEL_FILE)
+        _prediction_columns = list(joblib.load(MODEL_COLUMNS_FILE))
+    except Exception:
+        _prediction_model = None
+        _prediction_columns = []
+
+    return _prediction_model, _prediction_columns
+
+
+def load_symptom_choices():
+    global _symptom_choices
+    if _symptom_choices is not None:
+        return _symptom_choices
+
+    symptom_names = set()
+    if SYMPTOM_CSV_FILE.exists():
+        try:
+            df = pd.read_csv(SYMPTOM_CSV_FILE)
+            symptom_columns = [col for col in df.columns if col.lower().startswith('symptom')]
+            for col in symptom_columns:
+                symptom_names.update(
+                    df[col]
+                    .dropna()
+                    .astype(str)
+                    .str.strip()
+                    .str.lower()
+                    .tolist()
+                )
+        except Exception:
+            symptom_names = set()
+
+    if not symptom_names and ALL_SYMPTOMS_FILE.exists():
+        try:
+            with open(ALL_SYMPTOMS_FILE, 'rb') as f:
+                symptom_names = set(pickle.load(f))
+        except Exception:
+            symptom_names = set()
+
+    if not symptom_names:
+        symptom_names = {sym.name.strip().lower() for sym in Symptom.objects.all()}
+
+    symptom_names = {name for name in symptom_names if name and name.lower() != 'nan'}
+    _symptom_choices = sorted(symptom_names)
+    return _symptom_choices
+
+
+def load_precaution_map():
+    global _precaution_map
+    if _precaution_map is not None:
+        return _precaution_map
+
+    precaution_map = {}
+    if PRECAUTION_CSV_FILE.exists():
+        try:
+            df = pd.read_csv(PRECAUTION_CSV_FILE)
+            df['Disease'] = df['Disease'].astype(str).str.strip().str.lower()
+            precaution_columns = [col for col in df.columns if col.lower().startswith('precaution')]
+            for _, row in df.iterrows():
+                disease_key = row['Disease']
+                precautions = [str(row[col]).strip() for col in precaution_columns if str(row[col]).strip() and str(row[col]).strip().lower() != 'nan']
+                if disease_key:
+                    precaution_map[disease_key] = precautions
+        except Exception:
+            precaution_map = {}
+
+    _precaution_map = precaution_map
+    return _precaution_map
+
 
 def home(request):
     if request.user.is_authenticated:
@@ -64,35 +169,37 @@ def dashboard(request):
 @login_required
 def symptom_checker(request):
     if request.method == 'POST':
-        selected_symptom_names = request.POST.getlist('symptoms')
+        selected_symptom_names = [name.strip().lower() for name in request.POST.getlist('symptoms') if name]
 
         if not selected_symptom_names:
             messages.error(request, "Please select at least one symptom.")
             return redirect('symptoms')
 
-        # --- RULE-BASED PREDICTION ENGINE ---
-        # Get selected symptom objects from the database
-        selected_symptoms = Symptom.objects.filter(name__in=selected_symptom_names)
+        model, model_columns = load_prediction_model()
+        predicted_disease = None
+        medication_names = "Please consult a doctor for proper diagnosis."
 
-        # Score each disease by how many of its symptoms match the selected ones
-        best_match = None
-        best_score = 0
+        if model is not None and model_columns is not None and len(model_columns) > 0:
+            try:
+                input_data = {
+                    col: 1 if col in selected_symptom_names else 0
+                    for col in model_columns
+                }
+                input_df = pd.DataFrame([input_data], columns=model_columns)
+                predicted_disease = model.predict(input_df)[0]
+                predicted_disease = str(predicted_disease).strip()
+            except Exception:
+                predicted_disease = None
 
-        for disease in Disease.objects.all():
-            disease_symptoms = disease.symptoms.all()
-            match_count = disease_symptoms.filter(id__in=selected_symptoms).count()
-            if match_count > best_score:
-                best_score = match_count
-                best_match = disease
-
-        if best_match and best_score > 0:
-            predicted_disease = best_match.name
-            # Fetch recommended medications for this disease
-            medications = Medication.objects.filter(disease=best_match)
-            medication_names = ", ".join([m.name for m in medications]) if medications.exists() else "No specific medication found. Please consult a doctor."
-        else:
+        if not predicted_disease:
             predicted_disease = "No match found"
-            medication_names = "Please consult a doctor for proper diagnosis."
+        else:
+            disease_obj = Disease.objects.filter(name__iexact=predicted_disease).first()
+            if disease_obj:
+                medications = Medication.objects.filter(disease=disease_obj)
+                medication_names = ", ".join([m.name for m in medications]) if medications.exists() else "No specific medication found. Please consult a doctor."
+            else:
+                medication_names = "No specific medication found. Please consult a doctor."
 
         # Save consultation to history
         history = ConsultationHistory.objects.create(
@@ -103,8 +210,15 @@ def symptom_checker(request):
         )
         return redirect('results', history_id=history.id)
 
-    # Load all symptoms from database for the form
-    all_symptoms = Symptom.objects.all().order_by('name')
+    # Load symptoms directly from the dataset for the form
+    raw_symptoms = load_symptom_choices()
+    all_symptoms = [
+        {
+            'key': symp,
+            'label': symp.replace('_', ' ').title()
+        }
+        for symp in raw_symptoms
+    ]
     return render(request, 'core/symptom_checker.html', {'symptoms': all_symptoms})
 
 @login_required
@@ -172,6 +286,13 @@ def disease_detail(request, disease_name):
         disease_info['top_symptoms'] = [s.name for s in real_disease.symptoms.all()[:7]]
     except Disease.DoesNotExist:
         pass
+
+    # Load precautions from the dataset
+    precaution_map = load_precaution_map()
+    normalized_name = disease_name.strip().lower()
+    real_precautions = precaution_map.get(normalized_name, [])
+    if real_precautions:
+        disease_info['precautions'] = real_precautions
 
     return render(request, 'core/disease_detail.html', {'disease': disease_info})
 
