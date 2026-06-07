@@ -26,11 +26,13 @@ def _choose_model_path(filename):
 MODEL_FILE = _choose_model_path("random_forest_model.pkl")
 MODEL_COLUMNS_FILE = _choose_model_path("model_columns.pkl")
 SYMPTOM_CSV_FILE = _choose_model_path("DiseaseAndSymptoms.csv")
+PRECAUTION_CSV_FILE = _choose_model_path("Disease precaution.csv")
 ALL_SYMPTOMS_FILE = _choose_model_path("all_symptoms.pkl")
 
 _prediction_model = None
 _prediction_columns = None
 _symptom_choices = None
+_precaution_map = None
 
 
 def load_prediction_model():
@@ -83,6 +85,29 @@ def load_symptom_choices():
     symptom_names = {name for name in symptom_names if name and name.lower() != 'nan'}
     _symptom_choices = sorted(symptom_names)
     return _symptom_choices
+
+
+def load_precaution_map():
+    global _precaution_map
+    if _precaution_map is not None:
+        return _precaution_map
+
+    precaution_map = {}
+    if PRECAUTION_CSV_FILE.exists():
+        try:
+            df = pd.read_csv(PRECAUTION_CSV_FILE)
+            df['Disease'] = df['Disease'].astype(str).str.strip().str.lower()
+            precaution_columns = [col for col in df.columns if col.lower().startswith('precaution')]
+            for _, row in df.iterrows():
+                disease_key = row['Disease']
+                precautions = [str(row[col]).strip() for col in precaution_columns if str(row[col]).strip() and str(row[col]).strip().lower() != 'nan']
+                if disease_key:
+                    precaution_map[disease_key] = precautions
+        except Exception:
+            precaution_map = {}
+
+    _precaution_map = precaution_map
+    return _precaution_map
 
 
 def home(request):
@@ -261,6 +286,13 @@ def disease_detail(request, disease_name):
         disease_info['top_symptoms'] = [s.name for s in real_disease.symptoms.all()[:7]]
     except Disease.DoesNotExist:
         pass
+
+    # Load precautions from the dataset
+    precaution_map = load_precaution_map()
+    normalized_name = disease_name.strip().lower()
+    real_precautions = precaution_map.get(normalized_name, [])
+    if real_precautions:
+        disease_info['precautions'] = real_precautions
 
     return render(request, 'core/disease_detail.html', {'disease': disease_info})
 
