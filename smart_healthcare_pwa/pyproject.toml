@@ -10,4 +10,5 @@ package-mode = false
 python = "^3.10"
 django = "*"
 gunicorn = "*"
+whitenoise = "*"
 # Add any other vital packages here if needed (e.g., whitenoise = "*")
