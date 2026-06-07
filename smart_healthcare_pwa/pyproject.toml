@@ -1,0 +1,13 @@
+[tool.poetry]
+name = "smart-healthcare-pwa"
+version = "0.1.0"
+description = "Healthcare Prediction PWA"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "*"
+gunicorn = "*"
+# Add any other vital packages here if needed (e.g., whitenoise = "*")
