@@ -10,18 +10,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Symptom, Disease, Medication, ConsultationHistory, Appointment
 
-WORKSPACE_ROOT = Path(__file__).resolve().parents[3]
-# prefer model files inside Healthcare/model_files so the app is self-contained
-LOCAL_MODEL_DIR = WORKSPACE_ROOT / "model_files"
-# fallback to repo-level model_files (one directory up) for existing files
-REPO_MODEL_DIR = Path(__file__).resolve().parents[4] / "model_files"
+WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
+MODEL_DIR = WORKSPACE_ROOT / "model_files"
 
 def _choose_model_path(filename):
-    local = LOCAL_MODEL_DIR / filename
-    repo = REPO_MODEL_DIR / filename
-    if local.exists():
-        return local
-    return repo
+    return MODEL_DIR / filename
 
 MODEL_FILE = _choose_model_path("random_forest_model.pkl")
 MODEL_COLUMNS_FILE = _choose_model_path("model_columns.pkl")
