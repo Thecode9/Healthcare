@@ -49,7 +49,17 @@ def load_symptom_choices():
         return _symptom_choices
 
     symptom_names = set()
-    if SYMPTOM_CSV_FILE.exists():
+
+    # First priority: all_symptoms.pkl — always complete and matches the trained model
+    if ALL_SYMPTOMS_FILE.exists():
+        try:
+            with open(ALL_SYMPTOMS_FILE, 'rb') as f:
+                symptom_names = set(pickle.load(f))
+        except Exception:
+            symptom_names = set()
+
+    # Second priority: CSV dataset (may be incomplete)
+    if not symptom_names and SYMPTOM_CSV_FILE.exists():
         try:
             df = pd.read_csv(SYMPTOM_CSV_FILE)
             symptom_columns = [col for col in df.columns if col.lower().startswith('symptom')]
@@ -65,13 +75,7 @@ def load_symptom_choices():
         except Exception:
             symptom_names = set()
 
-    if not symptom_names and ALL_SYMPTOMS_FILE.exists():
-        try:
-            with open(ALL_SYMPTOMS_FILE, 'rb') as f:
-                symptom_names = set(pickle.load(f))
-        except Exception:
-            symptom_names = set()
-
+    # Last resort: database
     if not symptom_names:
         symptom_names = {sym.name.strip().lower() for sym in Symptom.objects.all()}
 
