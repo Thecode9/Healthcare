@@ -1,1 +1,7 @@
 /supervisor_chat.txt.txt
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+db.sqlite3

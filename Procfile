@@ -1,1 +1,1 @@
-web: gunicorn smart_healthcare.wsgi
+web: gunicorn --chdir smart_healthcare_pwa smart_healthcare.wsgi
