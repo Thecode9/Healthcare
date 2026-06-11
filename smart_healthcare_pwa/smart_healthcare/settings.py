@@ -27,6 +27,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://healthcare-production-a60c.up.railway.app',
+]
+
 
 # Application definition
 
