@@ -1,18 +1,84 @@
 {% extends 'core/_base.html' %}
 
+{% block header %}
+<div class="screen-header" style="justify-content: flex-start; padding-bottom: 0;">
+    <button class="back-btn" onclick="window.history.back()" style="margin-right: 15px;"><i class="material-icons">arrow_back</i></button>
+</div>
+{% endblock %}
+
 {% block content %}
-<div style="margin-bottom: 25px;">
-    <h1>Health Tips</h1>
-    <p style="color: var(--text-muted);">Simple advice to keep you healthy every day.</p>
+<div style="margin-bottom: 30px; margin-top: 10px;">
+    <h1 style="font-size: 2rem; color: var(--text-main); font-weight: 700; margin-bottom: 5px;">Daily Health Tips</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Simple, scientifically-proven advice to live a healthier life.</p>
 </div>
 
-{% for tip in tips %}
-<div class="pill-card" style="display: block; padding: 20px; margin-bottom: 15px;">
-    <div style="display: flex; align-items: center; margin-bottom: 10px;">
-        <span style="font-size: 1.8rem; margin-right: 12px;">{{ tip.icon }}</span>
-        <h3 style="font-size: 1rem;">{{ tip.title }}</h3>
+<style>
+    .tips-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .tip-card {
+        background: var(--surface);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid #EDF2F7;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .tip-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+    
+    .tip-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    
+    .tip-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: #F0EDFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-right: 14px;
+    }
+    
+    .tip-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+    
+    .tip-body {
+        font-size: 0.92rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+</style>
+
+<div class="tips-container">
+    {% for tip in tips %}
+    <div class="tip-card">
+        <div class="tip-header">
+            <div class="tip-icon-wrapper">
+                <span>{{ tip.icon }}</span>
+            </div>
+            <h3 class="tip-title">{{ tip.title }}</h3>
+        </div>
+        <p class="tip-body">{{ tip.body }}</p>
     </div>
-    <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">{{ tip.body }}</p>
+    {% endfor %}
 </div>
-{% endfor %}
+
+<div style="text-align: center; margin: 35px 0 15px 0;">
+    <p style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">💡 Small habits lead to big health improvements!</p>
+</div>
 {% endblock %}

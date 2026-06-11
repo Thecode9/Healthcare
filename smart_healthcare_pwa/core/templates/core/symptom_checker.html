@@ -105,38 +105,64 @@
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('symptomSearch');
         const container = document.getElementById('symptomsList');
+        const form = document.getElementById('symptomForm');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const submitBtn = document.getElementById('submitBtn');
 
-        // Live search — query items dynamically so reordering works
+        // Live search
         searchInput.addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase();
-            const items = container.querySelectorAll('.symptom-item');
-            items.forEach(item => {
+            container.querySelectorAll('.symptom-item').forEach(item => {
                 const name = item.querySelector('.symptom-name').textContent.toLowerCase();
                 item.style.display = name.includes(term) ? 'flex' : 'none';
             });
         });
 
-        // When a checkbox is toggled, move the checked item(s) to the top
+        // Move checked to top
         container.addEventListener('change', function(e) {
             const input = e.target;
             if (!input.matches('input[type="checkbox"]')) return;
             const label = input.closest('.symptom-item');
             if (!label) return;
-
             if (input.checked) {
-                // prepend so newest checked appears first
                 container.prepend(label);
             } else {
-                // move unchecked items below checked ones — find last checked
                 const checkedInputs = container.querySelectorAll('input[type="checkbox"]:checked');
                 if (checkedInputs.length === 0) {
                     container.append(label);
                 } else {
-                    const lastChecked = checkedInputs[checkedInputs.length - 1].closest('.symptom-item');
-                    lastChecked.after(label);
+                    checkedInputs[checkedInputs.length - 1].closest('.symptom-item').after(label);
                 }
             }
         });
+
+        // Loading spinner on submit
+        form.addEventListener('submit', function(e) {
+            const checked = container.querySelectorAll('input[type="checkbox"]:checked');
+            if (checked.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one symptom before predicting.');
+                return;
+            }
+            loadingOverlay.style.display = 'flex';
+            submitBtn.disabled = true;
+        });
     });
 </script>
-{% endblock %}
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh;
+     background:rgba(26,16,64,0.85); backdrop-filter:blur(8px);
+     z-index:9999; align-items:center; justify-content:center; flex-direction:column; gap:20px;">
+    <div style="width:64px; height:64px; border-radius:50%;
+                border:5px solid rgba(255,255,255,0.15);
+                border-top-color:#4A24E1;
+                animation: spin 0.9s linear infinite;"></div>
+    <div style="color:white; font-size:1rem; font-weight:600;">Analysing symptoms with AI...</div>
+    <div style="color:rgba(255,255,255,0.6); font-size:0.82rem;">This usually takes 1–2 seconds</div>
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</div>
+
+{% endblock %}

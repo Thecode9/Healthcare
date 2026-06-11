@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1A1A2E">
+    {% load static %}
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>MedAI — Doctor Login</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --primary: #4A24E1;
+            --primary-gradient: linear-gradient(135deg, #4A24E1 0%, #2A8BF2 100%);
+            --bg-dark: #0F0F1A;
+            --surface-dark: rgba(26, 26, 46, 0.8);
+            --text-light: #F0F2F5;
+            --text-muted: #A0A0B8;
+            --success: #1FC96E;
+            --danger: #FF3B30;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at 10% 20%, rgb(4, 4, 32) 0%, rgb(16, 12, 44) 90.2%);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Decorative Background Orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 1;
+            opacity: 0.5;
+        }
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: #4A24E1;
+            top: -50px;
+            left: -50px;
+        }
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: #2A8BF2;
+            bottom: -100px;
+            right: -100px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--surface-dark);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 48px 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.06);
+            z-index: 10;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: var(--primary-gradient);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 16px rgba(74, 36, 225, 0.3);
+        }
+
+        .login-logo i {
+            font-size: 36px;
+            color: white;
+        }
+
+        .login-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+
+        .login-header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 16px;
+            top: 16px;
+            color: var(--text-muted);
+            font-size: 20px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px 16px 16px 48px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #2A8BF2;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(42, 139, 242, 0.25);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 12px;
+            box-shadow: 0 8px 20px rgba(74, 36, 225, 0.2);
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        .btn-submit:hover {
+            box-shadow: 0 8px 24px rgba(74, 36, 225, 0.35);
+        }
+
+        /* Alert styling */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-error {
+            background-color: rgba(255, 59, 48, 0.15);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            color: #FF453A;
+        }
+
+        .alert-success {
+            background-color: rgba(31, 201, 110, 0.15);
+            border: 1px solid rgba(31, 201, 110, 0.3);
+            color: #30D158;
+        }
+
+        .portal-switcher {
+            text-align: center;
+            margin-top: 32px;
+            font-size: 0.85rem;
+        }
+
+        .portal-switcher a {
+            color: #2A8BF2;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .portal-switcher a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-logo">
+                <i class="material-icons">admin_panel_settings</i>
+            </div>
+            <h1>Clinical Staff Portal</h1>
+            <p>Authorized personnel only. Please sign in below.</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="material-icons" style="font-size: 18px;">warning</i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" action="{% url 'doctor_login' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <i class="material-icons">badge</i>
+                <input type="text" name="username" class="form-control" placeholder="Clinical ID / Username" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <i class="material-icons">vpn_key</i>
+                <input type="password" name="password" class="form-control" placeholder="Security Token / Password" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn-submit">Secure Log In</button>
+        </form>
+
+        <div class="portal-switcher">
+            Looking for patient dashboard? <a href="{% url 'login' %}">Patient Login</a>
+        </div>
+    </div>
+</body>
+</html>

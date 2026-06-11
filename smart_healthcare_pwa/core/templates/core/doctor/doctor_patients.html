@@ -3,44 +3,94 @@
 {% block page_title %}All Patients{% endblock %}
 
 {% block doc_content %}
+<style>
+    .patient-row {
+        cursor: pointer;
+        transition: background 0.18s;
+    }
+    .patient-row:hover {
+        background: #F0F2FF !important;
+    }
+    .patient-row td:first-child {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .patient-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--doc-primary-light);
+        color: var(--doc-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    .view-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        background: var(--doc-primary-light);
+        color: var(--doc-primary);
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+    .view-link:hover {
+        background: #d4cefc;
+    }
+    .view-link i {
+        font-size: 16px;
+    }
+</style>
+
 <div class="doc-table-wrap">
     <div class="doc-table-header">
         <h2>Registered Patients ({{ patients|length }})</h2>
+        <span style="font-size: 0.85rem; color: var(--doc-text-muted);">Click any row to view full history</span>
     </div>
     <table class="doc-table">
         <thead>
             <tr>
-                <th>Username</th>
-                <th>Full Name</th>
+                <th>Patient</th>
                 <th>Age</th>
                 <th>Gender</th>
                 <th>Blood Type</th>
                 <th>Consultations</th>
                 <th>Joined</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
             {% for p in patients %}
-            <tr>
-                <td><strong>{{ p.username|title }}</strong></td>
+            <tr class="patient-row" onclick="window.location='{% url 'patient_detail' p.id %}'">
                 <td>
-                    {% if p.userprofile %}
-                        {{ p.userprofile.full_name }}
-                    {% else %}
-                        <span style="color: var(--doc-text-muted);">No profile</span>
-                    {% endif %}
+                    <div class="patient-avatar">{{ p.username|first|upper }}</div>
+                    <div>
+                        <strong>{{ p.username|title }}</strong>
+                        <div style="font-size: 0.8rem; color: var(--doc-text-muted);">
+                            {% if p.userprofile %}{{ p.userprofile.full_name }}{% else %}No profile{% endif %}
+                        </div>
+                    </div>
                 </td>
+                <td>{% if p.userprofile %}{{ p.userprofile.age }}{% else %}—{% endif %}</td>
+                <td>{% if p.userprofile %}{{ p.userprofile.get_gender_display }}{% else %}—{% endif %}</td>
+                <td>{% if p.userprofile and p.userprofile.blood_type %}{{ p.userprofile.blood_type }}{% else %}—{% endif %}</td>
                 <td>
-                    {% if p.userprofile %}{{ p.userprofile.age }}{% else %}—{% endif %}
+                    <span style="font-weight: 600; color: var(--doc-primary);">{{ p.consultations.count }}</span>
                 </td>
-                <td>
-                    {% if p.userprofile %}{{ p.userprofile.get_gender_display }}{% else %}—{% endif %}
-                </td>
-                <td>
-                    {% if p.userprofile and p.userprofile.blood_type %}{{ p.userprofile.blood_type }}{% else %}—{% endif %}
-                </td>
-                <td>{{ p.consultations.count }}</td>
                 <td>{{ p.date_joined|date:"M d, Y" }}</td>
+                <td>
+                    <a href="{% url 'patient_detail' p.id %}" class="view-link" onclick="event.stopPropagation()">
+                        <i class="material-icons">folder_open</i> View
+                    </a>
+                </td>
             </tr>
             {% empty %}
             <tr>
@@ -56,3 +106,4 @@
     </table>
 </div>
 {% endblock %}
+

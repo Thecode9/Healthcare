@@ -4,8 +4,16 @@ from django.contrib.auth.models import User
 class Symptom(models.Model):
     name = models.CharField(max_length=100, unique=True)
     
-    def __str__(self):
+    @property
+    def key(self):
         return self.name
+
+    @property
+    def label(self):
+        return self.name.replace('_', ' ').strip().title()
+
+    def __str__(self):
+        return self.label
 
 class Disease(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -26,12 +34,21 @@ class Medication(models.Model):
 class ConsultationHistory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='consultations')
     predicted_disease = models.CharField(max_length=100)
+    confidence_score = models.FloatField(default=0.0)
     recommended_medication = models.TextField(blank=True, null=True)
     symptoms_reported = models.TextField()
+    predictions_json = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"{self.user.username} - {self.predicted_disease} on {self.created_at.strftime('%Y-%m-%d')}"
+        return f"{self.user.username} - {self.predicted_disease} ({self.confidence_score}%) on {self.created_at.strftime('%Y-%m-%d')}"
+
+class Precaution(models.Model):
+    disease = models.ForeignKey(Disease, on_delete=models.CASCADE, related_name='precautions')
+    description = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.disease.name} - {self.description}"
 
 class Appointment(models.Model):
     STATUS_CHOICES = [

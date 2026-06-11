@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Symptom, Disease, Medication, ConsultationHistory, Appointment
+from .models import Symptom, Disease, Medication, ConsultationHistory, Appointment, Precaution
 
 @admin.register(Symptom)
 class SymptomAdmin(admin.ModelAdmin):
@@ -18,9 +18,15 @@ class MedicationAdmin(admin.ModelAdmin):
     list_filter = ('disease',)
     search_fields = ('name',)
 
+@admin.register(Precaution)
+class PrecautionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'disease', 'description')
+    list_filter = ('disease',)
+    search_fields = ('description', 'disease__name')
+
 @admin.register(ConsultationHistory)
 class ConsultationHistoryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'predicted_disease', 'created_at')
+    list_display = ('id', 'user', 'predicted_disease', 'confidence_score', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('user__username', 'predicted_disease')
 

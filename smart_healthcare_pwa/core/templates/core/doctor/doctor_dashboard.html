@@ -93,7 +93,7 @@
             {% for c in recent_consultations %}
             <tr>
                 <td><strong>{{ c.user.username|title }}</strong></td>
-                <td style="color: var(--doc-primary); font-weight: 600;">{{ c.predicted_disease }}</td>
+                <td style="color: var(--doc-primary); font-weight: 600;">{{ c.predicted_disease }} {% if c.confidence_score > 0 %}<span style="font-size: 0.8rem; color: var(--doc-text-muted);">({{ c.confidence_score|floatformat:1 }}%)</span>{% endif %}</td>
                 <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--doc-text-muted);">{{ c.symptoms_reported }}</td>
                 <td>{{ c.created_at|date:"M d, Y" }}</td>
             </tr>
@@ -111,3 +111,104 @@
     </table>
 </div>
 {% endblock %}
+
+{% if show_welcome %}
+<!-- Welcome Overlay Modal -->
+<div id="welcomeOverlay" class="welcome-overlay">
+    <div class="welcome-card">
+        <div class="welcome-pulse">
+            <i class="material-icons">admin_panel_settings</i>
+        </div>
+        <h2>Clinical Session Active</h2>
+        <p>Welcome back, Dr. {{ user.username|title }}. Syncing patient logs...</p>
+    </div>
+</div>
+
+<style>
+    .welcome-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(26, 26, 46, 0.9); /* Clinical dark background */
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        animation: fadeOutOverlay 0.5s ease-in forwards 2s;
+        pointer-events: none;
+    }
+    .welcome-card {
+        background: #FFFFFF;
+        padding: 40px;
+        border-radius: 24px;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        transform: scale(0.7);
+        opacity: 0;
+        animation: scaleInCard 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        max-width: 90%;
+        width: 340px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .welcome-pulse {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #E8E5F6;
+        color: #4A24E1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px auto;
+        animation: pulseCircleDoc 1.5s infinite;
+    }
+    .welcome-pulse i {
+        font-size: 48px;
+    }
+    .welcome-card h2 {
+        font-size: 1.5rem;
+        color: #1A1A1A;
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+    .welcome-card p {
+        font-size: 0.95rem;
+        color: #8E8E93;
+        line-height: 1.4;
+    }
+
+    @keyframes scaleInCard {
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    @keyframes pulseCircleDoc {
+        0% {
+            box-shadow: 0 0 0 0 rgba(74, 36, 225, 0.4);
+        }
+        70% {
+            box-shadow: 0 0 0 20px rgba(74, 36, 225, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(74, 36, 225, 0);
+        }
+    }
+    @keyframes fadeOutOverlay {
+        to {
+            opacity: 0;
+            visibility: hidden;
+        }
+    }
+</style>
+
+<script>
+    setTimeout(() => {
+        const overlay = document.getElementById('welcomeOverlay');
+        if (overlay) overlay.remove();
+    }, 2600);
+</script>
+{% endif %}
