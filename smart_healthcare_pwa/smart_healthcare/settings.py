@@ -10,26 +10,44 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Attempt to load .env file if available
+env_file = BASE_DIR.parent / '.env'
+if env_file.exists():
+    try:
+        with open(env_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ.setdefault(key.strip(), value.strip())
+    except Exception:
+        pass
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-3waj9u5t8ilv_6q0om6isp3o6!idxoru(e_w55uwp&+!=ktt-^')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-3waj9u5t8ilv_6q0om6isp3o6!idxoru(e_w55uwp&+!=ktt-^'
+DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS')
+if allowed_hosts_env:
+    ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]
+else:
+    ALLOWED_HOSTS = ['*']
 
-ALLOWED_HOSTS = ['*']
+csrf_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS')
+if csrf_origins_env:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins_env.split(',') if o.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        'https://healthcare-production-a60c.up.railway.app',
+    ]
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://healthcare-production-a60c.up.railway.app',
-]
 
 
 # Application definition
@@ -126,3 +144,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

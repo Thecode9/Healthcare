@@ -1,23 +1,39 @@
+"""
+Dataset Metrics & Alignment Utility for MedAI.
+
+Evaluates disease dataset consistency and cross-references unique disease entries
+between precautions and symptom mapping files.
+"""
+
+from pathlib import Path
 import pandas as pd
 
-# Adjust working directory if running from Healthcare/model_files
+BASE_DIR = Path(__file__).resolve().parent
 
-df = pd.read_csv("Disease precaution.csv")
+def evaluate_dataset_consistency():
+    precaution_file = BASE_DIR / "Disease precaution.csv"
+    symptom_file = BASE_DIR / "DiseaseAndSymptoms.csv"
 
-df2 = pd.read_csv("DiseaseAndSymptoms.csv")
+    if not precaution_file.exists() or not symptom_file.exists():
+        print("[MedAI Metrics] Dataset files missing from model_files directory.")
+        return
 
-unique_diseases = df["Disease"].nunique()
-unique_diseases2 = df2["Disease"].nunique()
+    df_precaution = pd.read_csv(precaution_file)
+    df_symptoms = pd.read_csv(symptom_file)
 
-df["Disease"] = df["Disease"].str.strip().str.lower()
-df2["Disease"] = df2["Disease"].str.strip().str.lower()
+    df_precaution["Disease"] = df_precaution["Disease"].astype(str).str.strip().str.lower()
+    df_symptoms["Disease"] = df_symptoms["Disease"].astype(str).str.strip().str.lower()
 
-# print("Unique diseases in the dataset:", unique_diseases)
-# print("Unique diseases in the second dataset:", unique_diseases2)
+    set_precaution = set(df_precaution["Disease"])
+    set_symptoms = set(df_symptoms["Disease"])
+    common_diseases = set_precaution.intersection(set_symptoms)
 
-set1 = set(df["Disease"])
-set2 = set(df2["Disease"])
+    print("=== MedAI Dataset Consistency Report ===")
+    print(f"Unique diseases in precautions dataset : {len(set_precaution)}")
+    print(f"Unique diseases in symptoms dataset    : {len(set_symptoms)}")
+    print(f"Matching disease overlap               : {len(common_diseases)}")
 
-common = set1.intersection(set2)
 
-print("Matching diseases:", len(common))
+if __name__ == "__main__":
+    evaluate_dataset_consistency()
+

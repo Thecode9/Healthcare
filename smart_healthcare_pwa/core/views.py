@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 import pickle
 import json
@@ -11,10 +12,13 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Symptom, Disease, Medication, ConsultationHistory, Appointment
 
+logger = logging.getLogger(__name__)
+
 WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
 MODEL_DIR = WORKSPACE_ROOT / "model_files"
 
-def _choose_model_path(filename):
+def _choose_model_path(filename: str) -> Path:
+    """Return the absolute path for a model artifact file."""
     return MODEL_DIR / filename
 
 MODEL_FILE = _choose_model_path("random_forest_model.pkl")
@@ -30,6 +34,7 @@ _precaution_map = None
 
 
 def load_prediction_model():
+    """Load and cache the trained RandomForest classifier and feature columns."""
     global _prediction_model, _prediction_columns
     if _prediction_model is not None and _prediction_columns is not None:
         return _prediction_model, _prediction_columns
@@ -38,17 +43,18 @@ def load_prediction_model():
         if MODEL_FILE.exists():
             _prediction_model = joblib.load(MODEL_FILE)
             _prediction_columns = list(joblib.load(MODEL_COLUMNS_FILE))
-            print(f"[MedAI] Model loaded successfully from {MODEL_FILE}")
+            logger.info("Model loaded successfully from %s", MODEL_FILE)
         else:
-            print(f"[MedAI] Model file not found at {MODEL_FILE}")
+            logger.warning("Model file not found at %s", MODEL_FILE)
             _prediction_model = None
             _prediction_columns = []
     except Exception as e:
-        print(f"[MedAI] Error loading model: {e}")
+        logger.error("Error loading model: %s", e, exc_info=True)
         _prediction_model = None
         _prediction_columns = []
 
     return _prediction_model, _prediction_columns
+
 
 
 def load_symptom_choices():
@@ -58,7 +64,6 @@ def load_symptom_choices():
 
     symptom_names = set()
 
-    # First priority: all_symptoms.pkl — always complete and matches the trained model
     if ALL_SYMPTOMS_FILE.exists():
         try:
             with open(ALL_SYMPTOMS_FILE, 'rb') as f:
@@ -66,7 +71,6 @@ def load_symptom_choices():
         except Exception:
             symptom_names = set()
 
-    # Second priority: CSV dataset (may be incomplete)
     if not symptom_names and SYMPTOM_CSV_FILE.exists():
         try:
             df = pd.read_csv(SYMPTOM_CSV_FILE)
@@ -83,7 +87,6 @@ def load_symptom_choices():
         except Exception:
             symptom_names = set()
 
-    # Last resort: database
     if not symptom_names:
         symptom_names = {sym.name.strip().lower() for sym in Symptom.objects.all()}
 
@@ -151,7 +154,6 @@ def login_view(request):
                 login(request, user)
                 request.session['show_welcome_animation'] = True
                 messages.info(request, f"You are now logged in as {username}.")
-                # Redirect doctors to doctor portal
                 if user.is_staff:
                     return redirect('doctor_dashboard')
                 return redirect('dashboard')
@@ -177,7 +179,6 @@ def dashboard(request):
     from django.utils import timezone as tz
     show_welcome = request.session.pop('show_welcome_animation', False)
 
-    # --- Last consultation & streak ---
     last_consult = ConsultationHistory.objects.filter(user=request.user).order_by('-created_at').first()
     days_since = None
     streak_status = 'none'
@@ -193,7 +194,6 @@ def dashboard(request):
         else:
             streak_status = 'overdue'
 
-    # --- Daily health tip (cycles by day of year) ---
     daily_tips = [
         {'icon': '💧', 'text': 'Drink at least 8 glasses of water today to stay hydrated.'},
         {'icon': '😴', 'text': 'Aim for 7–9 hours of sleep tonight for peak recovery.'},
@@ -235,17 +235,13 @@ def symptom_checker(request):
                 }
                 input_df = pd.DataFrame([input_data], columns=model_columns)
                 
-                # Get probabilities for all classes
                 probs = model.predict_proba(input_df)[0]
                 classes = model.classes_
                 
-                # Zip classes and probabilities, sort descending
                 class_probs = sorted(zip(classes, probs), key=lambda x: x[1], reverse=True)
                 
-                # Extract top 3 predictions
                 for i, (disease, prob) in enumerate(class_probs[:3]):
                     disease_name = str(disease).strip()
-                    # Lookup medication
                     d_obj = Disease.objects.filter(name__iexact=disease_name).first()
                     if d_obj:
                         medications = Medication.objects.filter(disease=d_obj)
@@ -264,15 +260,13 @@ def symptom_checker(request):
                     predicted_disease = top_predictions[0]["disease"]
                     medication_names = top_predictions[0]["medication"]
             except Exception as e:
-                import traceback
-                print(f"[MedAI] Prediction error: {e}")
-                traceback.print_exc()
+                logger.exception("Prediction error occurred during symptom check: %s", e)
                 predicted_disease = None
+
 
         if not predicted_disease:
             predicted_disease = "No match found"
 
-        # Save consultation to history
         history = ConsultationHistory.objects.create(
             user=request.user,
             predicted_disease=predicted_disease,
@@ -283,7 +277,6 @@ def symptom_checker(request):
         )
         return redirect('results', history_id=history.id)
 
-    # Load symptoms from database (ground truth matching model columns)
     all_symptoms = Symptom.objects.all().order_by('name')
     return render(request, 'core/symptom_checker.html', {'symptoms': all_symptoms})
 
@@ -325,10 +318,8 @@ def book_appointment(request):
     if request.method == 'POST':
         date_str = request.POST.get('date')
         reason = request.POST.get('reason')
-        # Validate date format (ISO or YYYY-MM-DD) and ensure future date/time
         from datetime import datetime
         try:
-            # Django date input returns 'YYYY-MM-DD' (no time). We'll assume 09:00 default if time missing
             appointment_dt = datetime.fromisoformat(date_str)
         except ValueError:
             try:
@@ -375,7 +366,6 @@ def disease_detail(request, disease_name):
         'precautions': []
     }
     
-    # 1. Fetch real precautions from database
     real_disease = Disease.objects.filter(name__iexact=disease_name).first()
     precautions = []
     if real_disease:
@@ -388,10 +378,8 @@ def disease_detail(request, disease_name):
             'Avoid spreading to others',
             'Seek medical attention if symptoms worsen'
         ]
-    # Capitalize each precaution for beautiful rendering
     disease_info['precautions'] = [p.capitalize() for p in precautions]
     
-    # 2. Fetch real symptoms from database
     try:
         real_disease = Disease.objects.filter(name__iexact=disease_name).first()
         if real_disease:
@@ -399,7 +387,6 @@ def disease_detail(request, disease_name):
     except Exception:
         pass
         
-    # Fallback to loading symptoms from DiseaseAndSymptoms.csv if database is empty
     if not disease_info['top_symptoms']:
         try:
             symptoms_set = set()
@@ -417,11 +404,9 @@ def disease_detail(request, disease_name):
         except Exception:
             pass
             
-    # Final fallback if still empty
     if not disease_info['top_symptoms']:
         disease_info['top_symptoms'] = ['Fever', 'Fatigue', 'Headache', 'Nausea', 'Restlessness']
 
-    # Load precautions from the dataset
     precaution_map = load_precaution_map()
     normalized_name = disease_name.strip().lower()
     real_precautions = precaution_map.get(normalized_name, [])
@@ -432,7 +417,6 @@ def disease_detail(request, disease_name):
 
 @login_required
 def onboarding_view(request):
-    # Check if user already has a profile
     from .models import UserProfile
     if hasattr(request.user, 'userprofile'):
         return redirect('dashboard')
@@ -466,7 +450,6 @@ def profile_view(request):
     try:
         profile = request.user.userprofile
     except:
-        # If they somehow skipped onboarding
         return redirect('onboarding')
         
     return render(request, 'core/profile.html', {'profile': profile})

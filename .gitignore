@@ -1,7 +1,29 @@
-/supervisor_chat.txt.txt
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Database & Storage
+*.sqlite3
+*.db
+db.sqlite3
+
+# Python & Django Cache
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.pytest_cache/
+staticfiles/
+
+# Virtual Environments
 venv/
-.env
-db.sqlite3
+.venv/
+env/
+
+# IDE & OS Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+supervisor_chat.txt.txt

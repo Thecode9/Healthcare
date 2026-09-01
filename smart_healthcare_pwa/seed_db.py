@@ -5,7 +5,6 @@ import csv
 import django
 import pickle
 
-# Add project root to sys.path
 project_root = Path(__file__).resolve().parent
 sys.path.append(str(project_root))
 
@@ -14,7 +13,6 @@ django.setup()
 
 from core.models import Disease, Symptom, Medication, Precaution
 
-# Locate paths
 model_dir = project_root.parent / "model_files"
 csv_path = model_dir / "DiseaseAndSymptoms.csv"
 precaution_csv_path = model_dir / "Disease precaution.csv"
@@ -68,7 +66,6 @@ DISEASE_MEDICATIONS = {
 def seed():
     print("Starting database seeding for all 41 diseases...")
     
-    # 1. Clear existing database entries for a clean slate
     print("Clearing existing data...")
     Precaution.objects.all().delete()
     Medication.objects.all().delete()
@@ -80,7 +77,6 @@ def seed():
     meds_created = 0
     precautions_created = 0
 
-    # 2. Populate Symptoms from all_symptoms.pkl (ground truth)
     if symptoms_pkl_path.exists():
         print("Loading symptoms from all_symptoms.pkl...")
         with open(symptoms_pkl_path, 'rb') as f:
@@ -94,7 +90,6 @@ def seed():
     else:
         print("Warning: all_symptoms.pkl not found!")
 
-    # 3. Create Diseases and Medications from mapping
     for disease_name, meds in DISEASE_MEDICATIONS.items():
         # Match disease name casing/normalization (e.g. "Diabetes " to "Diabetes")
         normalized_name = disease_name.strip()
@@ -113,7 +108,6 @@ def seed():
             if created_m:
                 meds_created += 1
 
-    # 4. Load Precautions from Disease precaution.csv
     if precaution_csv_path.exists():
         print("Loading precautions from Disease precaution.csv...")
         with open(precaution_csv_path, mode='r', encoding='utf-8') as f:
@@ -146,7 +140,6 @@ def seed():
     else:
         print("Warning: Disease precaution.csv not found!")
 
-    # 5. Link symptoms to diseases using DiseaseAndSymptoms.csv
     if csv_path.exists():
         print("Linking symptoms to diseases from DiseaseAndSymptoms.csv...")
         with open(csv_path, mode='r', encoding='utf-8') as f:
